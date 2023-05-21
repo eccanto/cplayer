@@ -1,0 +1,50 @@
+$primary: red;
+$accent: #FF8000;
+$secondary: red;
+$background: black;
+$panel-lighten-1: black;
+
+Header {
+    margin: 1 0;
+    text-style: bold;
+}
+
+ProgressBar {
+    padding: 0 1;
+}
+
+Screen {
+    align: center middle;
+    background: $background 30%;
+}
+
+Label {
+    padding: 0 1;
+}
+
+#volume-label {
+    margin-left: 4;
+}
+
+Horizontal {
+    width: auto;
+    height: auto;
+}
+
+Vertical {
+    width: auto;
+    height: auto;
+}
+
+Center {
+    padding: 2;
+}
+
+.bold {
+    text-style: bold;
+}
+
+.panel {
+    padding: 1;
+    border: solid #353535;
+}
