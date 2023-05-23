@@ -54,7 +54,7 @@ class Song(ListItem):
 
 
 class Playlist(ListView):
-    CSS_PATH = 'application.css'
+    CSS_PATH = 'resources/styles/application.css'
     BINDINGS = [
         ('up', 'cursor_up', 'Cursor Up'),
         ('down', 'cursor_down', 'Cursor Down'),
@@ -73,7 +73,7 @@ class Playlist(ListView):
 
 class Application(App):
     TITLE = '♪ Pochita playlist'
-    CSS_PATH = 'application.css'
+    CSS_PATH = 'resources/styles/application.css'
     BINDINGS = [
         ('q', 'quit', 'Quit'),
         ('space', 'play_pause', 'Play/Pause'),
