@@ -1,0 +1,14 @@
+VolumeBar {
+  padding: 0 1;
+  width: auto;
+  height: auto;
+}
+
+Label {
+  margin-left: 0;
+}
+
+Horizontal {
+  width: auto;
+  height: auto;
+}

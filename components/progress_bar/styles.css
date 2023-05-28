@@ -1,0 +1,14 @@
+ProgressStatus {
+  padding: 0 0;
+  height: auto;
+  width: auto;
+}
+
+Label {
+  padding: 0 0;
+}
+
+Horizontal {
+  width: auto;
+  height: auto;
+}

@@ -1,50 +1,64 @@
-$primary: red;
+$primary: #FF8000;
 $accent: #FF8000;
 $secondary: red;
 $background: black;
 $panel-lighten-1: black;
 
 Header {
-    margin: 1 0;
-    text-style: bold;
-}
-
-ProgressBar {
-    padding: 0 1;
+  margin: 1 0;
+  text-style: bold;
 }
 
 Screen {
-    align: center middle;
-    background: $background 30%;
+  align: center middle;
+  background: $background 30%;
 }
 
 Label {
-    padding: 0 1;
-}
-
-#volume-label {
-    margin-left: 4;
+  padding: 0 1;
 }
 
 Horizontal {
-    width: auto;
-    height: auto;
+  width: auto;
+  height: auto;
 }
 
 Vertical {
-    width: auto;
-    height: auto;
+  width: auto;
+  height: auto;
 }
 
 Center {
-    padding: 2;
+  padding: 2;
 }
 
 .bold {
-    text-style: bold;
+  text-style: bold;
 }
 
 .panel {
-    padding: 1;
-    border: solid #353535;
+  padding: 1;
+  border: solid #353535;
+}
+
+.bottom {
+  margin-bottom: 0;
+  height: auto;
+  padding: 0;
+}
+
+.player-panel {
+  margin-bottom: 0;
+  height: auto;
+  padding: 1;
+}
+
+ListView {
+  background: transparent;
+  scrollbar-color: $primary 70%;
+}
+
+.full-width {
+  width: 100%;
+  align: center middle;
 }

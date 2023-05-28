@@ -1,0 +1,15 @@
+InputLabel {
+  height: auto;
+  margin: 0 0;
+}
+
+InputLabel Label {
+  padding: 1;
+  width: auto;
+  text-align: right;
+}
+
+InputLabel Input {
+  width: 1fr;
+  background: gray 30%;
+}
