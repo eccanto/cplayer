@@ -13,7 +13,7 @@ class HelpPage(HiddenWidget):
         '''
         # Simple Song Player
 
-        Basic song player writren with Python ([textual](https://textual.textualize.io/)).
+        Basic song player writren with Python ([github](https://github.com/eccanto/simple-song-player)).
 
         ## Features
 

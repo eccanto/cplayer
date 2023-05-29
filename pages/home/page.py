@@ -25,7 +25,8 @@ from textual._node_list import NodeList
 
 
 class HomePage(HiddenWidget):
-    CSS_PATH = 'resources/styles/application.css'
+    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
+
     BINDINGS = [
         Binding('space', 'play_pause', 'Play/Pause', show=False),
         Binding('-', 'decrease_volume', 'Decrease Volume', show=True),
