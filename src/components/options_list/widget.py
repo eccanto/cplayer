@@ -6,7 +6,7 @@ from textual.widget import Widget
 from textual.widgets import Label, ListItem, ListView
 from textual._node_list import NodeList
 
-from components.hidden_widget.widget import HiddenWidget
+from src.components.hidden_widget.widget import WidgetHidden
 
 
 class CustomListView(ListView):
@@ -29,10 +29,10 @@ class CustomListView(ListView):
     def clean(self) -> None:
         self._nodes = NodeList()
 
-    def add(self, items: List['Option']) -> None:
+    def add(self, items: List['WidgetOption']) -> None:
         self._add_children(*items)
 
-    def update(self, options: List['Option']) -> None:
+    def update(self, options: List['WidgetOption']) -> None:
         self._nodes = NodeList()
 
         for option in options:
@@ -43,17 +43,17 @@ class CustomListView(ListView):
 
     def action_select_option(self):
         if self.highlighted_child:
-            self._on_select(cast(Option, self.highlighted_child).path)
+            self._on_select(cast(WidgetOption, self.highlighted_child).path)
 
 
-class Option(ListItem):
+class WidgetOption(ListItem):
     def __init__(self, path: Path, prefix: str, *args, **kwargs) -> None:
         super().__init__(Label(f'{prefix} {path.name}' if prefix else path.name), *args, **kwargs)
 
         self.path = path
 
 
-class OptionsList(HiddenWidget):
+class WidgetOptionsList(WidgetHidden):
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
 
     def __init__(

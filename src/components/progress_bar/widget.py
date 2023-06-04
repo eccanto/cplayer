@@ -8,7 +8,7 @@ from textual.widget import Widget
 from textual.widgets import Label, ProgressBar
 
 
-class ProgressStatus(Widget):
+class WidgetProgressStatus(Widget):
     class Status(Enum):
         UNSELECTED = '[#FF8000]❱ unselected'.ljust(22)
         PLAYING = '[#00CC00]❱ playing'.ljust(22)

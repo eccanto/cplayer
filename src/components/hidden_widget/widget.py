@@ -1,7 +1,7 @@
 from textual.widget import Widget
 
 
-class HiddenWidget(Widget):
+class WidgetHidden(Widget):
     """Hidden widget representation."""
 
     def __init__(self, start_hidden: bool = True, *args, **kwargs) -> None:
@@ -12,6 +12,8 @@ class HiddenWidget(Widget):
     def on_mount(self) -> None:
         if self._start_hidden:
             self.hide()
+        else:
+            self.show()
 
     def hide(self) -> None:
         self.display = False

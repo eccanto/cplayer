@@ -1,5 +1,8 @@
+import logging
 import os
 from pathlib import Path
+from typing import Optional
+
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 
@@ -9,8 +12,13 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header
 
-from pages.help.page import HelpPage
-from pages.home.page import HomePage
+from src.elements.config import Config
+from src.pages.help.page import HelpPage
+from src.pages.home.page import HomePage
+
+
+__LOGGING_FORMAT = '[%(asctime)s] [%(process)d] %(filename)s:%(lineno)d - %(levelname)s - %(message)s'
+__DEFAULT_CONFIG = Path('./resources/config/default.yml')
 
 
 class Application(App):
@@ -22,7 +30,7 @@ class Application(App):
         Binding('i', 'info', 'Info', show=True),
     ]
 
-    def __init__(self, path: Path, *args, **kwargs):
+    def __init__(self, path: Optional[Path], *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.path = path
@@ -30,10 +38,13 @@ class Application(App):
     def compose(self) -> ComposeResult:
         yield Header()
 
-        yield HomePage(self.path)
-        yield HelpPage(start_hidden=True)
+        yield HomePage(self.path, change_title=self.set_title, start_hidden=False)
+        yield HelpPage(change_title=self.set_title)
 
         yield Footer()
+
+    def set_title(self, title) -> None:
+        self.title = title
 
     def action_info(self) -> None:
         help_page = self.query_one(HelpPage)
@@ -51,10 +62,8 @@ class Application(App):
 
 
 @click.command()
-@click.option(
-    '-p', '--path', help=f'Songs directory path.', type=click.Path(exists=True, path_type=Path), required=True
-)
-def main(path):
+@click.option('-p', '--path', help=f'Songs directory path.', type=click.Path(exists=True, path_type=Path))
+def main(path: Optional[Path]):
     mixer.init()
     mixer.music.set_volume(1)
 
@@ -63,4 +72,12 @@ def main(path):
 
 
 if __name__ == '__main__':
+    config = Config(default_data=__DEFAULT_CONFIG)
+
+    logging.basicConfig(
+        filename=Path(config.development.logfile).expanduser(),
+        level=logging.getLevelName(config.development.level),
+        format=__LOGGING_FORMAT,
+    )
+
     main()

@@ -1,5 +1,6 @@
+import logging
 from pathlib import Path
-from typing import Callable, List, Optional, cast
+from typing import Callable, List, Optional
 
 import numpy
 from pydub import AudioSegment
@@ -10,7 +11,7 @@ from textual.widgets import Label, ListItem, ListView
 from textual._node_list import NodeList
 
 
-class Song(ListItem):
+class WidgetSong(ListItem):
     def __init__(self, path: Path, *args, **kwargs) -> None:
         self.label = Label(f'♪ {path.name}')
 
@@ -49,7 +50,7 @@ class Song(ListItem):
         return self._buffer
 
 
-class Playlist(ListView):
+class WidgetPlaylist(ListView):
     CSS_PATH = 'resources/styles/application.css'
     BINDINGS = [
         Binding('up', 'cursor_up', 'Cursor Up', show=False),
@@ -59,12 +60,14 @@ class Playlist(ListView):
         Binding('enter', 'select_cursor', 'Reproduce', show=False),
     ]
 
-    highlighted_child: Optional[Song]
-    current_song: Optional[Song]
+    highlighted_child: Optional[WidgetSong]
+    current_song: Optional[WidgetSong]
+    children: List[WidgetSong]
+    displayed_children: List[WidgetSong]
 
     def __init__(
         self,
-        on_select: Callable[[Song], None],
+        on_select: Callable[[WidgetSong], None],
         on_cursor_left: Callable[[], None],
         on_cursor_right: Callable[[], None],
         *args,
@@ -92,28 +95,81 @@ class Playlist(ListView):
     def action_cursor_right(self):
         self.on_cursor_right()
 
-    def add(self, *song: Song) -> None:
+    def action_cursor_down(self) -> None:
+        """Highlight the next item in the list."""
+        if self.index is not None:
+            for index in range(self.index + 1, len(self.children)):
+                if self.children[index].display:
+                    self.index = index
+                    break
+            else:
+                self.select_index(0)
+        else:
+            self.select_index(0)
+
+    def action_cursor_up(self) -> None:
+        """Highlight the previous item in the list."""
+        if self.index is not None:
+            for index in range(self.index - 1, -1, -1):
+                if self.children[index].display:
+                    self.index = index
+                    break
+            else:
+                self.select_index(len(self.displayed_children) - 1)
+        else:
+            self.select_index(0)
+
+    def add(self, *song: WidgetSong) -> None:
         self._add_children(*song)
 
-    def update(self, songs: List[Song], position: Optional[int] = 0) -> None:
+    def update(self, songs: List[WidgetSong], position: Optional[int] = 0) -> None:
+        self.clear()
+
         self._nodes = NodeList()
 
         for index, song in enumerate(songs):
             song.highlighted = index == position
             self._add_child(song)
+            self.append(song)
 
         self.index = position
 
-    async def swap(self, position: int) -> None:
+    def select(self, path: Path) -> None:
+        for index, song in enumerate(self.displayed_children):
+            if song.path == path:
+                self.select_index(index)
+                break
+
+    def select_index(self, index: int) -> None:
+        if index < len(self.displayed_children):
+            item = self.displayed_children[index]
+            children_index = self.children.index(item)
+
+            self.index = children_index
+
+    def filter(self, pattern: str) -> None:
+        for song in self.children:
+            song.display = pattern in song.path.name.lower()
+
+    @property
+    def displayed_index(self):
         if self.index is not None:
-            if self.index < position:
-                new_index = min(position, len(self._nodes) - 1)
+            child = self.children[self.index]
+            index = self.displayed_children.index(child)
+        else:
+            index = None
+
+        return index
+
+    async def swap(self, position: int) -> None:
+        if self.displayed_index is not None:
+            if self.displayed_index < position:
+                new_index = min(position, len(self.displayed_children) - 1)
             else:
                 new_index = max(position, 0)
 
-            items = self.displayed_children
-            current_item = cast(Song, items[self.index])
-            new_item = cast(Song, items[new_index])
+            current_item = self.displayed_children[self.displayed_index]
+            new_item = self.displayed_children[new_index]
 
             current_item_path = current_item.path
             new_item_path = new_item.path
@@ -121,4 +177,4 @@ class Playlist(ListView):
             current_item.update(new_item_path)
             new_item.update(current_item_path)
 
-            self.index = new_index
+            self.index = self.children.index(new_item)

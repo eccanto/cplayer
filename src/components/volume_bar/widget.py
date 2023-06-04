@@ -6,7 +6,7 @@ from textual.widget import Widget
 from textual.widgets import Label, ProgressBar
 
 
-class VolumeBar(Widget):
+class WidgetVolumeBar(Widget):
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
 
     def __init__(self, default_volume: float = 0.75) -> None:

@@ -3,13 +3,12 @@ from typing import Callable, Coroutine
 
 from textual.app import ComposeResult
 from textual.containers import Center
-from textual.widget import Widget
 from textual.widgets import Input, Label
 
-from components.hidden_widget.widget import HiddenWidget
+from src.components.hidden_widget.widget import WidgetHidden
 
 
-class InputLabel(HiddenWidget):
+class WidgetInputLabel(WidgetHidden):
     """An input with a label."""
 
     BINDINGS = [
@@ -22,13 +21,14 @@ class InputLabel(HiddenWidget):
         self,
         input_label: str,
         on_enter: Callable[[], Coroutine[None, None, None]],
-        on_quit: Callable[['InputLabel'], None],
+        on_quit: Callable[['WidgetInputLabel'], None],
         *args,
         **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
 
         self.input_label = input_label
+
         self.on_enter = on_enter
         self.on_quit = on_quit
 
@@ -52,8 +52,3 @@ class InputLabel(HiddenWidget):
     def focus(self):
         input = self.query_one(Input)
         input.focus()
-
-    async def action_search(self):
-        await self.on_enter()
-
-        self.visible = False

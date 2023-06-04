@@ -1,16 +1,20 @@
+import logging
 import os
-from typing import Tuple, cast
+from typing import Optional, Tuple, cast
 
 from pydub.utils import json
 from textual.binding import Binding
 
-from components.hidden_widget.widget import HiddenWidget
-from components.input_label.widget import InputLabel
-from components.notification.widget import Notification
-from components.options_list.widget import Option, OptionsList
-from components.playlist.widget import Playlist, Song
-from components.progress_bar.widget import ProgressStatus
-from components.volume_bar.widget import VolumeBar
+from src.pages.base.page import PageBase
+from src.components.input_label.widget import WidgetInputLabel
+from src.components.notification.widget import WidgetNotification
+from src.components.options_list.widget import WidgetOption, WidgetOptionsList
+from src.components.playlist.widget import WidgetPlaylist, WidgetSong
+from src.components.progress_bar.widget import WidgetProgressStatus
+from src.components.volume_bar.widget import WidgetVolumeBar
+from src.elements.config import Config
+from src.elements.playlist import PlayList
+
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 
@@ -19,12 +23,10 @@ from pathlib import Path
 from pygame import mixer
 from textual.app import ComposeResult
 from textual.containers import Center, Middle, Horizontal, Vertical
-from textual.timer import Timer
 from textual.widgets import Label
-from textual._node_list import NodeList
 
 
-class HomePage(HiddenWidget):
+class HomePage(PageBase):
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
 
     BINDINGS = [
@@ -45,20 +47,19 @@ class HomePage(HiddenWidget):
         Binding('ctrl+down', 'down_song_position', 'Down Song', show=False),
     ]
 
-    _PLAYLISTS_DIRECTORY = Path('~/.playlists/').expanduser()
+    def __init__(self, path: Optional[Path], *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    progress_timer: Timer
+        self.config = Config()
 
-    def __init__(self, songs, start_hidden: bool = False, *args, **kwargs):
-        super().__init__(*args, start_hidden=start_hidden, **kwargs)
-
-        self._directory = songs
+        self.playlists_directory = Path(self.config.general.playlist.directory).expanduser()
+        self.playlists_directory.mkdir(parents=True, exist_ok=True)
 
         self._start_position = 0
         self._playing = False
-        self._playlist = None
 
-        self._songs = [Song(path) for path in self._directory.glob('*.mp3')][:20]
+        self.selected_directory = path
+        self.selected_playlist: Optional[PlayList] = None
 
     def __spectrum(self, data, shape: Tuple[int, int]):
         if not len(data):
@@ -76,24 +77,24 @@ class HomePage(HiddenWidget):
     def action_decrease_volume(self):
         mixer.music.set_volume((mixer.music.get_volume() - 0.1) if (mixer.music.get_volume() > 0) else 0)
 
-        volume_bar = self.query_one(VolumeBar)
+        volume_bar = self.query_one(WidgetVolumeBar)
         volume_bar.update(total=1, progress=mixer.music.get_volume())
 
     def action_increase_volume(self):
         mixer.music.set_volume(1 if (mixer.music.get_volume() > 1) else (mixer.music.get_volume() + 0.1))
 
-        volume_bar = self.query_one(VolumeBar)
+        volume_bar = self.query_one(WidgetVolumeBar)
         volume_bar.update(total=1, progress=mixer.music.get_volume())
 
     def action_play_pause(self):
-        bar = self.query_one(ProgressStatus)
+        bar = self.query_one(WidgetProgressStatus)
 
         self._playing = not mixer.music.get_busy()
         if self._playing:
-            bar.set_status(ProgressStatus.Status.PLAYING)
+            bar.set_status(WidgetProgressStatus.Status.PLAYING)
             mixer.music.unpause()
         else:
-            bar.set_status(ProgressStatus.Status.PAUSED)
+            bar.set_status(WidgetProgressStatus.Status.PAUSED)
             mixer.music.pause()
 
     def action_cursor_left(self):
@@ -111,44 +112,54 @@ class HomePage(HiddenWidget):
         search_input.display = True
         search_input.focus()
 
-    def play_song(self, song: Song):
+    def play_song(self, song: WidgetSong):
         self._start_position = 0
         song.play()
 
         self._playing = True
 
-        bar = self.query_one(ProgressStatus)
-        bar.set_status(ProgressStatus.Status.PLAYING)
+        bar = self.query_one(WidgetProgressStatus)
+        bar.set_status(WidgetProgressStatus.Status.PLAYING)
+
+        if self.selected_playlist:
+            self.selected_playlist.select(song.path)
 
     def action_reset(self):
         if mixer.music.get_busy():
             self._start_position = 0
             mixer.music.play(0, 0)
 
-    def on_input_quit(self, input_widget: InputLabel):
+    def on_input_quit(self, input_widget: WidgetInputLabel):
         input_widget.display = False
-        playlist = self.query_one(Playlist)
+        playlist = self.query_one(WidgetPlaylist)
         playlist.focus()
 
-        notification = self.query_one(Notification)
+        notification = self.query_one(WidgetNotification)
         notification.hide()
 
     async def filter_songs(self):
-        search_input = cast(InputLabel, self.query_one('#search-input'))
+        search_input = cast(WidgetInputLabel, self.query_one('#search-input'))
         search_input.hide()
 
-        playlist = cast(Playlist, self.query_one(Playlist))
-        playlist.update([song for song in self._songs if search_input.value.lower() in song.path.name.lower()])
+        pattern = search_input.value.lower()
+        logging.info('applying "%s" filter...', pattern)
+
+        playlist = self.query_one(WidgetPlaylist)
+        playlist.filter(pattern)
+        playlist.display = True
+        playlist.select_index(0)
         playlist.focus()
 
+        self.refresh()
+
     def action_previous_song(self) -> None:
-        playlist = self.query_one(Playlist)
+        playlist = self.query_one(WidgetPlaylist)
         if playlist.index:
             playlist.index -= 1
             playlist.action_select_cursor()
 
     def action_next_song(self) -> None:
-        playlist = self.query_one(Playlist)
+        playlist = self.query_one(WidgetPlaylist)
         if playlist.index is not None:
             playlist.index += 1
             playlist.action_select_cursor()
@@ -158,46 +169,39 @@ class HomePage(HiddenWidget):
         directory_input.display = True
         directory_input.focus()
 
-    async def load_directory(self):
-        search_input = cast(InputLabel, self.query_one('#directory-input'))
+    async def load_directory(self) -> None:
+        search_input = cast(WidgetInputLabel, self.query_one('#directory-input'))
 
-        notification = self.query_one(Notification)
+        self._load_directory(Path(search_input.value))
+
+    def _load_directory(self, path: Path) -> None:
+        search_input = cast(WidgetInputLabel, self.query_one('#directory-input'))
+
+        notification = self.query_one(WidgetNotification)
         notification.hide()
 
-        playlist = self.query_one(Playlist)
-        playlist._nodes = NodeList()
+        if path.exists():
+            search_input.hide()
 
-        self._directory = Path(search_input.value)
-
-        if self._directory.exists():
-            self._songs = [Song(path) for path in self._directory.glob('*.mp3')][:10]
-            if self._songs:
-                search_input.hide()
-
-                for song in self._songs:
-                    song.highlighted = False
-                    playlist._add_child(song)
-
-                playlist.focus()
-                playlist.index = 0
-            else:
-                notification.show(f'[#FFFF00] [#CC0000]songs "{self._directory}" not found')
+            playlist = self.query_one(WidgetPlaylist)
+            playlist.update([WidgetSong(path) for path in path.glob('*.mp3')][:10])
+            playlist.focus()
         else:
-            notification.show(f'[#FFFF00] [#CC0000]directory "{self._directory}" not found')
+            notification.show(f'[#FFFF00] [#CC0000]directory "{path}" not found')
             search_input.focus()
 
     def make_progress(self) -> None:
         """Called automatically to advance the progress bar."""
-        playlist = self.query_one(Playlist)
-        song = cast(Song, playlist.current_song)
+        playlist = self.query_one(WidgetPlaylist)
+        song = cast(WidgetSong, playlist.current_song)
 
         if song is not None:
             if self._playing:
                 current_position = int((mixer.music.get_pos() / 1000) + self._start_position)
-                song_time_bar = self.query_one(ProgressStatus)
+                song_time_bar = self.query_one(WidgetProgressStatus)
                 song_time_bar.update(total=song.seconds, progress=current_position)
 
-                bar = self.query_one(ProgressStatus)
+                bar = self.query_one(WidgetProgressStatus)
                 bar.set_progress(current_position, song.seconds)
 
                 song_label = cast(Label, self.query_one('#song-label'))
@@ -217,101 +221,106 @@ class HomePage(HiddenWidget):
         playlist_name_input.focus()
 
     def action_load_playlist(self) -> None:
-        playlist = self.query_one(Playlist)
+        playlist = self.query_one(WidgetPlaylist)
         playlist.display = False
 
-        playlists = self.query_one(OptionsList)
-        playlists.list_view.update([Option(path, '') for path in self._PLAYLISTS_DIRECTORY.glob('*.playlist')])
+        playlists = self.query_one(WidgetOptionsList)
+        playlists.list_view.update([WidgetOption(path, '') for path in self.playlists_directory.glob('*.playlist')])
         playlists.show()
         playlists.focus()
 
-    def load_playlist(self, path: Path) -> None:
-        if path.exists():
-            playlists = self.query_one(OptionsList)
+    def select_playlist(self, path: Path) -> None:
+        self.selected_playlist = PlayList(path)
+        self.load_playlist()
+
+    def load_playlist(self) -> None:
+        if self.selected_playlist and self.selected_playlist.path.exists():
+            playlists = self.query_one(WidgetOptionsList)
             playlists.hide()
 
-            with open(path) as playlist_file:
-                playlist_data = json.load(playlist_file)
+            songs = [WidgetSong(path) for path in self.selected_playlist.songs]
 
-            self._songs = [Song(Path(path)) for path in playlist_data['songs']]
+            self.change_title(f' {self.selected_playlist.name} Playlist')
 
-            self.title = f' {path.stem.title()} Playlist'
+            logging.info('loading playlist "%s" with %s items...', self.selected_playlist.name, len(songs))
 
-            playlist = self.query_one(Playlist)
-            playlist.update(self._songs)
+            playlist = self.query_one(WidgetPlaylist)
+            playlist.update(songs)
             playlist.display = True
             playlist.focus()
+
+            if self.selected_playlist.selected:
+                playlist.select(Path(self.selected_playlist.selected))
+
+            self.config.general.playlist.selected = str(self.selected_playlist.path)
+            self.config.save()
+
+            self.refresh()
         else:
-            notification = self.query_one(Notification)
-            notification.show(f'[#FFFF00] [#CC0000]playlist "{path}" not found')
+            notification = self.query_one(WidgetNotification)
+            notification.show(f'[#FFFF00] [#CC0000]playlist "{self.selected_playlist}" not found')
 
     async def enter_playlist_name(self) -> None:
-        playlist_name_input = cast(InputLabel, self.query_one('#playlist-name-input'))
+        playlist_name_input = cast(WidgetInputLabel, self.query_one('#playlist-name-input'))
 
-        notification = self.query_one(Notification)
+        notification = self.query_one(WidgetNotification)
         notification.hide()
 
-        playlist = self.query_one(Playlist)
+        playlist_widget = self.query_one(WidgetPlaylist)
 
-        self._playlist = self._PLAYLISTS_DIRECTORY.joinpath(playlist_name_input.value).with_suffix('.playlist')
-        self._PLAYLISTS_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        self.selected_playlist = PlayList(self.playlists_directory.joinpath(playlist_name_input.value).with_suffix('.playlist'))
+        self.selected_playlist.selected = playlist_widget.current_song.path if playlist_widget.current_song else None
+        self.selected_playlist.songs = [song.path for song in playlist_widget.displayed_children]
+        self.selected_playlist.save()
 
-        with open(self._playlist, 'w') as playlist_file:
-            json.dump(
-                {
-                    'name': self._playlist.name,
-                    'path': str(self._playlist),
-                    'selected': str(playlist.current_song.path) if playlist.current_song else None,
-                    'songs': [str(song.path) for song in self._songs]
-                },
-                playlist_file,
-                indent=2,
-            )
+        self.config.general.playlist.selected = str(self.selected_playlist.path)
+        self.config.save()
 
         playlist_name_input.hide()
-        playlist.focus()
+        playlist_widget.focus()
 
     async def action_up_song_position(self) -> None:
-        playlist = self.query_one(Playlist)
-        if playlist.index is not None:
-            await playlist.swap(playlist.index - 1)
+        playlist = self.query_one(WidgetPlaylist)
+        if playlist.displayed_index is not None:
+            await playlist.swap(playlist.displayed_index - 1)
 
     async def action_down_song_position(self) -> None:
-        playlist = self.query_one(Playlist)
-        if playlist.index is not None:
-            await playlist.swap(playlist.index + 1)
+        playlist = self.query_one(WidgetPlaylist)
+        if playlist.displayed_index is not None:
+            await playlist.swap(playlist.displayed_index + 1)
 
     async def action_delete_song(self) -> None:
-        playlist = self.query_one(Playlist)
+        playlist = self.query_one(WidgetPlaylist)
         if playlist.index is not None:
-            del self._songs[playlist.index]
+            songs = [WidgetSong(widget.path) for widget in playlist.children]
+            del songs[playlist.index]
 
-            playlist.update(self._songs, position=(len(self._songs) - 1) if (playlist.index >= len(self._songs)) else playlist.index)
+            playlist.update(
+                songs,
+                position=(len(playlist.children) - 1) if (playlist.index >= len(playlist.children)) else playlist.index,
+            )
 
     async def action_add_songs(self) -> None:
-        add_songs_input = cast(InputLabel, self.query_one('#add-songs-input'))
+        add_songs_input = cast(WidgetInputLabel, self.query_one('#add-songs-input'))
         add_songs_input.show()
 
     async def add_songs(self) -> None:
-        add_songs_input = cast(InputLabel, self.query_one('#add-songs-input'))
+        add_songs_input = cast(WidgetInputLabel, self.query_one('#add-songs-input'))
 
-        notification = self.query_one(Notification)
+        notification = self.query_one(WidgetNotification)
         notification.hide()
 
         path = Path(add_songs_input.value)
         if path.exists():
-            playlist = self.query_one(Playlist)
+            playlist = self.query_one(WidgetPlaylist)
 
             if path.is_file():
-                songs = [Song(path)]
+                songs = [WidgetSong(path)]
             else:
-                songs = [Song(song_path) for song_path in path.glob('*.mp3')]
+                songs = [WidgetSong(song_path) for song_path in path.glob('*.mp3')]
 
             if songs:
                 add_songs_input.hide()
-
-                self._songs.extend(songs)
-
                 playlist.add(*songs)
                 playlist.focus()
             else:
@@ -320,40 +329,39 @@ class HomePage(HiddenWidget):
             notification.show(f'[#FFFF00] [#CC0000]file "{path}" not found')
 
     def compose(self) -> ComposeResult:
-        yield InputLabel(
+        yield WidgetInputLabel(
             ' filter:',
             on_enter=self.filter_songs,
             on_quit=self.on_input_quit,
             id='search-input',
         )
-        yield InputLabel(
+        yield WidgetInputLabel(
             ' directory:',
             on_enter=self.load_directory,
             on_quit=self.on_input_quit,
             id='directory-input',
         )
-        yield InputLabel(
-            ' playlist name:',
+        yield WidgetInputLabel(
+            '󰆓 playlist name:',
             on_enter=self.enter_playlist_name,
             on_quit=self.on_input_quit,
             id='playlist-name-input',
         )
-        yield InputLabel(
+        yield WidgetInputLabel(
             ' add songs (mp3/directory):',
             on_enter=self.add_songs,
             on_quit=self.on_input_quit,
             id='add-songs-input',
         )
 
-        yield Notification('')
+        yield WidgetNotification('')
 
-        yield OptionsList('Select a playlist:', lambda _: None, self.load_playlist)
+        yield WidgetOptionsList('Select a playlist:', lambda _: None, self.select_playlist)
 
-        yield Playlist(
+        yield WidgetPlaylist(
             self.play_song,
             self.action_cursor_left,
             self.action_cursor_right,
-            *self._songs,
         )
 
         with Middle(classes='bottom'):
@@ -362,14 +370,22 @@ class HomePage(HiddenWidget):
                     with Vertical(classes='panel'):
                         yield Label('-', id='song-label', classes='bold')
                         with Horizontal():
-                            yield ProgressStatus()
-                            yield VolumeBar()
+                            yield WidgetProgressStatus()
+                            yield WidgetVolumeBar()
                     with Vertical(classes='panel'):
                         yield Label(self.__spectrum([], (2, 12)), id='effects-label', classes='bold')
 
     def on_mount(self) -> None:
-        self.progress_timer = self.set_interval(1 / 10, self.make_progress, pause=False)
+        super().on_mount()
+
+        self.set_interval(1 / 10, self.make_progress, pause=False)
+
+        if self.selected_directory is not None:
+            self._load_directory(self.selected_directory)
+        elif self.config.general.playlist.selected:
+            self.selected_playlist = PlayList(Path(self.config.general.playlist.selected))
+            self.load_playlist()
 
     def focus(self) -> None:
-        playlist = self.query_one(Playlist)
+        playlist = self.query_one(WidgetPlaylist)
         playlist.focus()

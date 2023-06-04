@@ -5,10 +5,10 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Label
 
-from components.hidden_widget.widget import HiddenWidget
+from src.components.hidden_widget.widget import WidgetHidden
 
 
-class Notification(HiddenWidget):
+class WidgetNotification(WidgetHidden):
     """Notification widget representation."""
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()

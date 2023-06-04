@@ -1,0 +1,10 @@
+general:
+    playlist:
+        directory: ~/.pyplayer/playlists/
+        selected: null
+
+development:
+    logfile: ~/.pyplayer/logfile.log
+    level: INFO
+
+style: null
