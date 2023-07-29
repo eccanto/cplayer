@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Center
 from textual.widgets import Input, Label
 
-from src.components.hidden_widget.widget import WidgetHidden
+from src.components.hidden_widget import WidgetHidden
 
 
 class WidgetInputLabel(WidgetHidden):
@@ -15,7 +15,7 @@ class WidgetInputLabel(WidgetHidden):
         ('escape', 'quit', 'Quit'),
     ]
 
-    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
+    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class WidgetInputLabel(WidgetHidden):
         on_enter: Callable[[], Coroutine[None, None, None]],
         on_quit: Callable[['WidgetInputLabel'], None],
         *args,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
@@ -36,19 +36,19 @@ class WidgetInputLabel(WidgetHidden):
         with Center():
             yield Label(self.input_label)
 
-            input = Input()
-            input.action_submit = self.on_enter
+            input_widget = Input()
+            input_widget.action_submit = self.on_enter
 
-            yield input
+            yield input_widget
 
     @property
     def value(self):
-        input = self.query_one(Input)
-        return input.value
+        input_widget = self.query_one(Input)
+        return input_widget.value
 
     def action_quit(self):
         self.on_quit(self)
 
-    def focus(self):
-        input = self.query_one(Input)
-        input.focus()
+    def focus(self, scroll_visible: bool = True) -> None:
+        input_widget = self.query_one(Input)
+        input_widget.focus(scroll_visible)

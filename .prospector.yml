@@ -1,0 +1,77 @@
+strictness: veryhigh
+autodetect: false
+inherits:
+  - default
+ignore-paths:
+  - documentation
+  - build
+  - dist
+ignore-patterns:
+  - __pycache__
+max-line-length: 120
+
+bandit:
+  run: true
+
+dodgy:
+  run: true
+
+mccabe:
+  run: true
+  options:
+    max-complexity: 10
+
+pycodestyle:
+  run: true
+  full: true
+  disable:
+    - E203
+      # whitespace before ':'
+      # already tested by brunette
+    - E402
+      # Module level import not at top of file
+      # already tested by pylint: wrong-import-position
+
+pydocstyle:
+  run: true
+  disable:
+    - D104
+      # Missing docstring in public package
+    - D203
+      # 1 blank line required before class docstring (found 0)
+      # incompatible with reST and D211
+    - D205
+      # 1 blank line required between summary line and description (found 0)
+      # incompatible with reST
+    - D213
+      # Multi-line docstring summary should start at the second line
+      # incompatible with reST
+    - D301
+      # Use r""" if any backslashes in a docstring
+      # incompatible with click formatted help text
+    - D400
+      # First line should end with a period
+      # incompatible with reST
+    - D401
+      # First line should be in imperative mood
+      # incompatible with the standard "Verb forms in reference documentation" (e.g.: "Get" is preferred to "Gets")
+
+pyflakes:
+  run: true
+
+pylint:
+  run: true
+
+pyroma:
+  run: true
+
+mypy:
+  run: true
+  options:
+    ignore-missing-imports: true
+
+vulture:
+  run: false
+
+frosted:
+  run: false

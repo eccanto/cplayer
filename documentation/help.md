@@ -21,7 +21,8 @@ Available keymaps.
 | -               | `playlist` | Decrease Volume                    |
 | +               | `playlist` | Increase Volume                    |
 | l               | `playlist` | Load Playlist                      |
-| d               | `playlist` | Load Directory                     |
+| d               | `playlist` | File Explorer                      |
+| ctrl+d          | `playlist` | Load Directory Path                |
 | p               | `playlist` | Previous                           |
 | n               | `playlist` | Next                               |
 | r               | `playlist` | Restart                            |
@@ -32,6 +33,7 @@ Available keymaps.
 | A               | `playlist` | Add songs                          |
 | ctrl+up         | `playlist` | Up Song                            |
 | ctrl+down       | `playlist` | Down Song                          |
+| o               | `playlist` | Change playlist order              |
 
 ## Configuration
 

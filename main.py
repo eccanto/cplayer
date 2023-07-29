@@ -1,10 +1,13 @@
-import logging
 import os
-from pathlib import Path
-from typing import Optional
 
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
+
+# pylint: disable=wrong-import-position
+
+import logging
+from pathlib import Path
+from typing import Optional
 
 import click
 from pygame import mixer
@@ -13,12 +16,12 @@ from textual.binding import Binding
 from textual.widgets import Footer, Header
 
 from src.elements.config import Config
-from src.pages.help.page import HelpPage
-from src.pages.home.page import HomePage
+from src.pages.help import HelpPage
+from src.pages.home import HomePage
 
 
 __LOGGING_FORMAT = '[%(asctime)s] [%(process)d] %(filename)s:%(lineno)d - %(levelname)s - %(message)s'
-__DEFAULT_CONFIG = Path('./resources/config/default.yml')
+__DEFAULT_CONFIG = Path('./resources/config/default.yaml')
 
 
 class Application(App):
@@ -62,7 +65,7 @@ class Application(App):
 
 
 @click.command()
-@click.option('-p', '--path', help=f'Songs directory path.', type=click.Path(exists=True, path_type=Path))
+@click.option('-p', '--path', help='Songs directory path.', type=click.Path(exists=True, path_type=Path))
 def main(path: Optional[Path]):
     mixer.init()
     mixer.music.set_volume(1)
@@ -80,4 +83,4 @@ if __name__ == '__main__':
         format=__LOGGING_FORMAT,
     )
 
-    main()
+    main()  # pylint: disable=no-value-for-parameter

@@ -1,6 +1,7 @@
 """Singleton pattern implementation."""
 
-class Singleton:
+
+class Singleton:  # pylint: disable=too-few-public-methods
     _instances = {}
 
     def __new__(cls, *_args, **_kwargs):

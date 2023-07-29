@@ -4,8 +4,8 @@ from textual.widget import Widget
 class WidgetHidden(Widget):
     """Hidden widget representation."""
 
-    def __init__(self, start_hidden: bool = True, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, start_hidden: bool = True, **kwargs) -> None:
+        super().__init__(**kwargs)
 
         self._start_hidden = start_hidden
 

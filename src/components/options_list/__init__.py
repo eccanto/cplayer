@@ -1,12 +1,13 @@
 from pathlib import Path
-from typing import Callable, List, cast
+from typing import Callable, List, Union, cast
+
+from textual._node_list import NodeList
 from textual.app import ComposeResult
 from textual.containers import Middle
 from textual.widget import Widget
 from textual.widgets import Label, ListItem, ListView
-from textual._node_list import NodeList
 
-from src.components.hidden_widget.widget import WidgetHidden
+from src.components.hidden_widget import WidgetHidden
 
 
 class CustomListView(ListView):
@@ -18,7 +19,7 @@ class CustomListView(ListView):
     def __init__(
         self,
         on_quit: Callable[[Widget], None],
-        on_select: Callable[[Path], None],
+        on_select: Callable[[Union[Path, str]], None],
         *children,
     ) -> None:
         super().__init__(*children)
@@ -43,27 +44,36 @@ class CustomListView(ListView):
 
     def action_select_option(self):
         if self.highlighted_child:
-            self._on_select(cast(WidgetOption, self.highlighted_child).path)
+            self._on_select(cast(WidgetOption, self.highlighted_child).data)
 
 
 class WidgetOption(ListItem):
-    def __init__(self, path: Path, prefix: str, *args, **kwargs) -> None:
-        super().__init__(Label(f'{prefix} {path.name}' if prefix else path.name), *args, **kwargs)
+    def __init__(self, data: Union[Path, str], prefix: str, *args, **kwargs) -> None:
+        super().__init__(
+            Label(
+                f'{prefix} {data.name if isinstance(data, Path) else data}'
+                if prefix
+                else (data.name if isinstance(data, Path) else data)
+            ),
+            *args,
+            **kwargs,
+        )
 
-        self.path = path
+        self.data = data
 
 
 class WidgetOptionsList(WidgetHidden):
-    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
+    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     def __init__(
         self,
         label: str,
         on_quit: Callable[[Widget], None],
-        on_select: Callable[[Path], None],
+        on_select: Callable[[Union[Path, str]], None],
         *children,
+        **kwargs,
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
         self._label = label
         self._on_quit = on_quit
@@ -77,5 +87,5 @@ class WidgetOptionsList(WidgetHidden):
             yield self.label
             yield self.list_view
 
-    def focus(self):
-        self.list_view.focus()
+    def focus(self, scroll_visible: bool = True) -> None:
+        self.list_view.focus(scroll_visible)

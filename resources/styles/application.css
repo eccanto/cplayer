@@ -53,11 +53,6 @@ Center {
   padding: 1;
 }
 
-ListView {
-  background: transparent;
-  scrollbar-color: $primary 70%;
-}
-
 .full-width {
   width: 100%;
   align: center middle;

@@ -14,7 +14,7 @@ class WidgetProgressStatus(Widget):
         PLAYING = '[#00CC00]❱ playing'.ljust(22)
         PAUSED = '[#0080FF]❱ paused'.ljust(22)
 
-    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
+    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -23,8 +23,8 @@ class WidgetProgressStatus(Widget):
             yield Label('00:00/00:00', id='progress-label')
 
     def update(self, *args, **kwargs) -> None:
-        bar = self.query_one(ProgressBar)
-        bar.update(*args, **kwargs)
+        progress_bar = self.query_one(ProgressBar)
+        progress_bar.update(*args, **kwargs)
 
     def set_status(self, status: Status) -> None:
         reproduce_label = cast(Label, self.query_one('#reproduce-label'))

@@ -4,7 +4,7 @@ The Config class is built on top of the third-party `dotmap` package, which prov
 manipulate nested dictionaries as if they were objects with dot notation.
 """
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import yaml
 from dotmap import DotMap
@@ -17,14 +17,14 @@ class Config(Singleton):
 
     :Example:
 
-    >>> config = Config('config.yml')
+    >>> config = Config('config.yaml')
     >>> print(config.database.host)
     localhost
     >>> config.database.port = 5432
     >>> config.save()
     """
 
-    DEFAULT_PATH = Path('~/.pyplayer/config.yml').expanduser()
+    DEFAULT_PATH = Path('~/.pyplayer/config.yaml').expanduser()
 
     def __init__(self, path: Path = DEFAULT_PATH, default_data: Optional[Path] = None) -> None:
         """Initialize the Config object.

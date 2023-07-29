@@ -2,16 +2,15 @@ from pathlib import Path
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.widget import Widget
 from textual.widgets import Label
 
-from src.components.hidden_widget.widget import WidgetHidden
+from src.components.hidden_widget import WidgetHidden
 
 
 class WidgetNotification(WidgetHidden):
     """Notification widget representation."""
 
-    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text()
+    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     def __init__(self, label: str, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

@@ -8,8 +8,8 @@ Install dependencies
 pip install -r requirements.txt
 ```
 
-Start the server
+run player
 
 ```bash
-python app.py
+python main.py
 ```

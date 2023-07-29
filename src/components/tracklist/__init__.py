@@ -1,14 +1,15 @@
-import logging
+import random
+from enum import Enum
 from pathlib import Path
 from typing import Callable, List, Optional
 
 import numpy
 from pydub import AudioSegment
 from pygame import mixer
+from rich.console import Console
 from textual.binding import Binding
-
 from textual.widgets import Label, ListItem, ListView
-from textual._node_list import NodeList
+from typing_extensions import Self
 
 
 class WidgetSong(ListItem):
@@ -45,13 +46,20 @@ class WidgetSong(ListItem):
 
     @property
     def buffer(self):
-        if self._buffer is None:
+        if self._buffer is None and self._audio:
             self._buffer = numpy.array(self._audio.get_array_of_samples())
         return self._buffer
 
 
-class WidgetPlaylist(ListView):
-    CSS_PATH = 'resources/styles/application.css'
+class PlaylistOrder(Enum):
+    ASCENDING = 'ascending'
+    DESCENDANT = 'descendant'
+    RANDOM = 'random'
+
+
+class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
+    DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
+
     BINDINGS = [
         Binding('up', 'cursor_up', 'Cursor Up', show=False),
         Binding('down', 'cursor_down', 'Cursor Down', show=False),
@@ -65,24 +73,54 @@ class WidgetPlaylist(ListView):
     children: List[WidgetSong]
     displayed_children: List[WidgetSong]
 
+    _FIXED_SIZE = 14
+    _MAX_SIZE = 100
+
     def __init__(
         self,
         on_select: Callable[[WidgetSong], None],
         on_cursor_left: Callable[[], None],
         on_cursor_right: Callable[[], None],
-        *args,
-        **kwargs
+        order: PlaylistOrder = PlaylistOrder.ASCENDING,
+        **kwargs,
     ) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
         self.on_select = on_select
         self.on_cursor_left = on_cursor_left
         self.on_cursor_right = on_cursor_right
 
+        self.order = order
+
         self.current_song = None
+
+        self.console = Console()
+        self.length = self.console.size.height - self._FIXED_SIZE
+
+        self.items = []
+        self.items_length = 0
+        self.items_offset = 0
+
+        self._add_children(*[WidgetSong(Path()) for i in range(self._MAX_SIZE)])
+        self._hide()
 
     def on_mount(self) -> None:
         self.focus()
+
+    def refresh(self, *args, **kwargs) -> Self:
+        new_length = self.console.size.height - self._FIXED_SIZE
+        if new_length < self.length and self.index:
+            delta = self.length - new_length
+
+            self.items_offset += delta
+            self._scroll()
+
+            self.length = new_length
+            self.index -= delta
+        else:
+            self.length = new_length
+
+        return super().refresh(*args, **kwargs)
 
     def action_select_cursor(self) -> None:
         if self.highlighted_child:
@@ -95,42 +133,59 @@ class WidgetPlaylist(ListView):
     def action_cursor_right(self):
         self.on_cursor_right()
 
-    def action_cursor_down(self) -> None:
-        """Highlight the next item in the list."""
-        if self.index is not None:
-            for index in range(self.index + 1, len(self.children)):
-                if self.children[index].display:
-                    self.index = index
-                    break
+    def _hide(self) -> None:
+        for song in self.children:
+            song.visible = False
+
+    def _scroll(self) -> None:
+        for index, song in enumerate(self.children):
+            raw_index = self.items_offset + index
+            if 0 <= raw_index < self.items_length:
+                song.update(Path(self.items[raw_index]))
+                song.visible = True
             else:
+                break
+
+    def action_cursor_down(self) -> None:
+        """Highlight the previous item in the list."""
+        if self.index is not None and self.items_length:
+            if self.index >= self.length - 1:
+                self.items_offset = min(self.items_length - 1, self.items_offset + 1)
+                self._scroll()
+            elif self.index < self.items_length - 1:
+                self.select_index(self.index + 1)
+            else:
+                self.items_offset = 0
+                self._scroll()
                 self.select_index(0)
         else:
             self.select_index(0)
 
     def action_cursor_up(self) -> None:
-        """Highlight the previous item in the list."""
-        if self.index is not None:
-            for index in range(self.index - 1, -1, -1):
-                if self.children[index].display:
-                    self.index = index
-                    break
+        """Highlight the next item in the list."""
+        if self.index is not None and self.items_length:
+            if self.index <= 0:
+                self.items_offset = max(self.items_offset - 1, 0)
+                self._scroll()
             else:
-                self.select_index(len(self.displayed_children) - 1)
+                self.select_index(self.index - 1)
         else:
             self.select_index(0)
 
-    def add(self, *song: WidgetSong) -> None:
-        self._add_children(*song)
+    def update(self, paths: List[Path], position: Optional[int] = 0, sort: bool = False) -> None:
+        if sort:
+            if self.order == PlaylistOrder.ASCENDING:
+                paths.sort()
+            elif self.order == PlaylistOrder.DESCENDANT:
+                paths.sort(reverse=True)
+            elif self.order == PlaylistOrder.RANDOM:
+                random.shuffle(paths)
 
-    def update(self, songs: List[WidgetSong], position: Optional[int] = 0) -> None:
-        self.clear()
-
-        self._nodes = NodeList()
-
-        for index, song in enumerate(songs):
-            song.highlighted = index == position
-            self._add_child(song)
-            self.append(song)
+        self._hide()
+        self.items = paths
+        self.items_length = len(paths)
+        self.items_offset = 0
+        self._scroll()
 
         self.index = position
 
