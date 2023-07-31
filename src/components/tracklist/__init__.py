@@ -12,8 +12,16 @@ from textual.widgets import Label, ListItem, ListView
 from typing_extensions import Self
 
 
-class WidgetSong(ListItem):
+class SongWidget(ListItem):
+    """Song widget."""
+
     def __init__(self, path: Path, *args, **kwargs) -> None:
+        """Initializes the Widget object.
+
+        :param path: The path to the audio file.
+        :param *args: Variable length argument list.
+        :param **kwargs: Arbitrary keyword arguments.
+        """
         self.label = Label(f'♪ {path.name}')
 
         super().__init__(self.label, *args, **kwargs)
@@ -26,18 +34,31 @@ class WidgetSong(ListItem):
         self._buffer = None
 
     def __repr__(self) -> str:
+        """Returns the string representation of the Widget.
+
+        :returns: The name of the audio file.
+        """
         return self.path.name
 
-    def play(self):
+    def play(self) -> None:
+        """Plays the audio associated with the song."""
         mixer.music.load(self.path)
         mixer.music.play()
 
     def update(self, path: Path) -> None:
+        """Updates the song widget with a new audio file.
+
+        :param path: The path to the new audio file.
+        """
         self.path = path
         self.label.update(f'♪ {path.name}')
 
     @property
     def seconds(self):
+        """Calculates and returns the duration of the audio in seconds.
+
+        :returns: The duration of the audio in seconds.
+        """
         if self._seconds is None:
             self._audio = AudioSegment.from_mp3(self.path)
             self._seconds = len(self._audio) / 1000.0
@@ -46,18 +67,26 @@ class WidgetSong(ListItem):
 
     @property
     def buffer(self):
+        """Returns the audio data as a numpy array.
+
+        :returns: The audio data as a numpy array.
+        """
         if self._buffer is None and self._audio:
             self._buffer = numpy.array(self._audio.get_array_of_samples())
         return self._buffer
 
 
 class PlaylistOrder(Enum):
+    """Orders in which the playlist is played."""
+
     ASCENDING = 'ascending'
     DESCENDANT = 'descendant'
     RANDOM = 'random'
 
 
-class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
+class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
+    """Tracklist widget."""
+
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     BINDINGS = [
@@ -68,22 +97,30 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
         Binding('enter', 'select_cursor', 'Reproduce', show=False),
     ]
 
-    highlighted_child: Optional[WidgetSong]
-    current_song: Optional[WidgetSong]
-    children: List[WidgetSong]
-    displayed_children: List[WidgetSong]
+    highlighted_child: Optional[SongWidget]
+    current_song: Optional[SongWidget]
+    children: List[SongWidget]
+    displayed_children: List[SongWidget]  # type: ignore
 
     _FIXED_SIZE = 14
     _MAX_SIZE = 100
 
     def __init__(
         self,
-        on_select: Callable[[WidgetSong], None],
+        on_select: Callable[[SongWidget], None],
         on_cursor_left: Callable[[], None],
         on_cursor_right: Callable[[], None],
         order: PlaylistOrder = PlaylistOrder.ASCENDING,
         **kwargs,
     ) -> None:
+        """Initializes the Widget object.
+
+        :param on_select: A function to be called when selecting a song in the tracklist.
+        :param on_cursor_left: A function to be called when moving the cursor to the left.
+        :param on_cursor_right: A function to be called when moving the cursor to the right.
+        :param order: The order in which the playlist is played.
+        :param **kwargs: Arbitrary keyword arguments.
+        """
         super().__init__(**kwargs)
 
         self.on_select = on_select
@@ -97,17 +134,23 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
         self.console = Console()
         self.length = self.console.size.height - self._FIXED_SIZE
 
-        self.items = []
+        self.items: List[Path] = []
         self.items_length = 0
         self.items_offset = 0
 
-        self._add_children(*[WidgetSong(Path()) for i in range(self._MAX_SIZE)])
+        self._add_children(*[SongWidget(Path()) for i in range(self._MAX_SIZE)])
         self._hide()
 
     def on_mount(self) -> None:
+        """Handle the on-mount event for the tracklist widget."""
         self.focus()
 
     def refresh(self, *args, **kwargs) -> Self:
+        """Refresh the tracklist widget.
+
+        :param *args: Variable length argument list.
+        :param **kwargs: Arbitrary keyword arguments.
+        """
         new_length = self.console.size.height - self._FIXED_SIZE
         if new_length < self.length and self.index:
             delta = self.length - new_length
@@ -123,21 +166,26 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
         return super().refresh(*args, **kwargs)
 
     def action_select_cursor(self) -> None:
+        """Performs the action associated with selecting a song in the tracklist."""
         if self.highlighted_child:
             self.current_song = self.highlighted_child
             self.on_select(self.highlighted_child)
 
-    def action_cursor_left(self):
+    def action_cursor_left(self) -> None:
+        """Performs the action associated with moving the cursor to the left."""
         self.on_cursor_left()
 
-    def action_cursor_right(self):
+    def action_cursor_right(self) -> None:
+        """Performs the action associated with moving the cursor to the right."""
         self.on_cursor_right()
 
     def _hide(self) -> None:
+        """Hides all child songs in the tracklist."""
         for song in self.children:
             song.visible = False
 
     def _scroll(self) -> None:
+        """Scrolls the tracklist to display new songs."""
         for index, song in enumerate(self.children):
             raw_index = self.items_offset + index
             if 0 <= raw_index < self.items_length:
@@ -173,6 +221,12 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
             self.select_index(0)
 
     def update(self, paths: List[Path], position: Optional[int] = 0, sort: bool = False) -> None:
+        """Updates the tracklist with a new list of audio file paths.
+
+        :param paths: A list of paths to the audio files.
+        :param position: The position to set as the currently highlighted song.
+        :param sort: Whether to sort the playlist based on the specified order.
+        """
         if sort:
             if self.order == PlaylistOrder.ASCENDING:
                 paths.sort()
@@ -189,13 +243,29 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
 
         self.index = position
 
+    def add(self, paths: List[Path]) -> None:
+        """Adds new file paths to the tracklist.
+
+        :param items: A list of paths to the audio files.
+        """
+        self.items.extend(paths)
+        self.items_length = len(self.items)
+
     def select(self, path: Path) -> None:
+        """Selects a song in the tracklist based on its path.
+
+        :param path: The path to the audio file.
+        """
         for index, song in enumerate(self.displayed_children):
             if song.path == path:
                 self.select_index(index)
                 break
 
     def select_index(self, index: int) -> None:
+        """Selects a song in the tracklist based on its index.
+
+        :param index: The index of the song in the tracklist.
+        """
         if index < len(self.displayed_children):
             item = self.displayed_children[index]
             children_index = self.children.index(item)
@@ -203,11 +273,19 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
             self.index = children_index
 
     def filter(self, pattern: str) -> None:
+        """Filters the tracklist based on a search pattern.
+
+        :param pattern: The search pattern.
+        """
         for song in self.children:
             song.display = pattern in song.path.name.lower()
 
     @property
     def displayed_index(self):
+        """Gets the displayed index of the currently highlighted song.
+
+        :returns: The displayed index of the currently highlighted song.
+        """
         if self.index is not None:
             child = self.children[self.index]
             index = self.displayed_children.index(child)
@@ -217,6 +295,10 @@ class WidgetTracklist(ListView):  # pylint: disable=too-many-instance-attributes
         return index
 
     async def swap(self, position: int) -> None:
+        """Swaps the position of the currently highlighted song with another song.
+
+        :param position: The position to swap with.
+        """
         if self.displayed_index is not None:
             if self.displayed_index < position:
                 new_index = min(position, len(self.displayed_children) - 1)

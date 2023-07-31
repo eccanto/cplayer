@@ -1,10 +1,18 @@
+"""Module to define the Playlist class that represents a collection of songs and their metadata."""
+
 import json
 from pathlib import Path
 from typing import Optional
 
 
 class PlayList:
+    """Playlist class."""
+
     def __init__(self, path: Path) -> None:
+        """Initializes the Widget object.
+
+        :param path: The path to the playlist file.
+        """
         self.path = path
         self.name = self.path.stem.title()
 
@@ -18,6 +26,7 @@ class PlayList:
             self.songs = []
 
     def save(self) -> None:
+        """Saves the playlist data to the file."""
         with open(self.path, 'w', encoding='UTF-8') as json_file:
             json.dump(
                 {
@@ -31,5 +40,9 @@ class PlayList:
             )
 
     def select(self, path: Path) -> None:
+        """Sets the selected song in the playlist and save the playlist data.
+
+        :param path: The path to the selected song.
+        """
         self.selected = path
         self.save()

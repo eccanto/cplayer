@@ -8,8 +8,15 @@ from textual.widget import Widget
 from textual.widgets import Label, ProgressBar
 
 
-class WidgetProgressStatus(Widget):
+class ProgressStatusWidget(Widget):
+    """Progress and status widget."""
+
     class Status(Enum):
+        """Playback statuses.
+
+        The `Status` enum represents the possible playback statuses of a song or an ongoing process.
+        """
+
         UNSELECTED = '[#FF8000]❱ unselected'.ljust(22)
         PLAYING = '[#00CC00]❱ playing'.ljust(22)
         PAUSED = '[#0080FF]❱ paused'.ljust(22)
@@ -17,20 +24,38 @@ class WidgetProgressStatus(Widget):
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     def compose(self) -> ComposeResult:
+        """Composes the layout for the Widget.
+
+        :yields: Widgets representing the status and progress display.
+        """
         with Horizontal():
             yield Label(self.Status.UNSELECTED.value, id='reproduce-label')
             yield ProgressBar(show_eta=False, show_percentage=False)
             yield Label('00:00/00:00', id='progress-label')
 
     def update(self, *args, **kwargs) -> None:
+        """Updates the ProgressBar widget with the given arguments.
+
+        :param *args: Variable length argument list.
+        :param **kwargs: Arbitrary keyword arguments.
+        """
         progress_bar = self.query_one(ProgressBar)
         progress_bar.update(*args, **kwargs)
 
     def set_status(self, status: Status) -> None:
+        """Sets the status label to the given status.
+
+        :param status: The status enum value to set.
+        """
         reproduce_label = cast(Label, self.query_one('#reproduce-label'))
         reproduce_label.update(status.value)
 
     def set_progress(self, current_seconds: float, total_seconds: float) -> None:
+        """Sets the progress label to the given progress.
+
+        :param current_seconds: The current progress in seconds.
+        :param total_seconds: The total progress in seconds.
+        """
         progress_label = cast(Label, self.query_one('#progress-label'))
         progress_label.update(
             f'{(current_seconds // 60):02}:{(current_seconds % 60):02}'

@@ -1,3 +1,12 @@
+"""Entry point for the Song Player Console Application.
+
+The application provides a console-based user interface to manage and play songs, create and manage playlists,
+adjust volume levels, and control song playback.
+
+Author: Erik Ccanto
+Date: 30 Jul 2023
+"""
+
 import os
 
 
@@ -25,6 +34,8 @@ __DEFAULT_CONFIG = Path('./resources/config/default.yaml')
 
 
 class Application(App):
+    """Class that represent the main application and inherits from the textual App class."""
+
     TITLE = ' Playlist'
     CSS_PATH = 'resources/styles/application.css'
     BINDINGS = [
@@ -33,12 +44,22 @@ class Application(App):
         Binding('i', 'info', 'Info', show=True),
     ]
 
-    def __init__(self, path: Optional[Path], *args, **kwargs):
+    def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
+        """Initializes the Application object.
+
+        :param path: The optional path of the directory songs.
+        :param *args: Variable length argument list.
+        :param **kwargs: Arbitrary keyword arguments.
+        """
         super().__init__(*args, **kwargs)
 
         self.path = path
 
     def compose(self) -> ComposeResult:
+        """Composes the application layout.
+
+        :returns: The ComposeResult object representing the composed layout.
+        """
         yield Header()
 
         yield HomePage(self.path, change_title=self.set_title, start_hidden=False)
@@ -46,10 +67,15 @@ class Application(App):
 
         yield Footer()
 
-    def set_title(self, title) -> None:
+    def set_title(self, title: str) -> None:
+        """Sets the title of the application window.
+
+        :param title: The title of the application window.
+        """
         self.title = title
 
     def action_info(self) -> None:
+        """Opens the information window."""
         help_page = self.query_one(HelpPage)
         help_page.show()
 
@@ -57,6 +83,7 @@ class Application(App):
         home_path.hide()
 
     def action_home(self) -> None:
+        """Opens the home window."""
         home_path = self.query_one(HomePage)
         home_path.show()
 
@@ -66,7 +93,8 @@ class Application(App):
 
 @click.command()
 @click.option('-p', '--path', help='Songs directory path.', type=click.Path(exists=True, path_type=Path))
-def main(path: Optional[Path]):
+def main(path: Optional[Path]) -> None:
+    """Command line music player."""
     mixer.init()
     mixer.music.set_volume(1)
 

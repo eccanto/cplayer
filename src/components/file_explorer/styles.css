@@ -1,4 +1,4 @@
-FileExplorer {
+FileExplorerWidget {
   background: transparent;
   scrollbar-color: $primary 70%;
 }

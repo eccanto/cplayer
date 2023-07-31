@@ -2,6 +2,6 @@
 
 set -euox pipefail
 
-brunette --check --diff --skip-string-normalization --config setup.cfg "."
-isort --check-only --diff "."
-prospector "."
+python -m brunette --check --diff --skip-string-normalization --config setup.cfg "."
+python -m isort --check-only --diff "."
+python -m prospector "."
