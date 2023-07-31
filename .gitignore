@@ -1,2 +1,10 @@
+# IDEs
+.vscode/
+
 # Python
-__pycache__
+__pycache__/
+
+# Build
+build/
+dist/
+cplayer.egg-info/

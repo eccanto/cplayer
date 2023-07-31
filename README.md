@@ -1,4 +1,4 @@
-# PyPlayer
+# CPlayer
 
 ## Get started
 
