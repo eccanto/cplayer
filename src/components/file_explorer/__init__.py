@@ -18,16 +18,23 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
         Binding('right', 'open', 'Open', show=True),
     ]
 
-    def __init__(self, path: Path, on_select: Callable[[Path], None], **kwargs) -> None:
+    def __init__(self, default_path: Path, on_select: Callable[[Path], None], **kwargs) -> None:
         """Initializes the Widget object.
 
         :param on_select: A function to be called when a file or directory is selected.
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(path=path, **kwargs)
+        super().__init__('.', **kwargs)
 
+        self.default_path = default_path
         self.on_select = on_select
+
+    def on_mount(self) -> None:
+        """Handles events on the mounting of the file explorer."""
+        super().on_mount()
+
+        self.path = self.default_path
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         """Filters the provided iterable of paths based on some criteria.

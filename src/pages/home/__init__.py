@@ -468,7 +468,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             ),
         )
 
-        yield FileExplorerWidget(path=Path('~').expanduser(), on_select=self.on_select_path)
+        yield FileExplorerWidget(Path('~').expanduser(), on_select=self.on_select_path)
 
         with Middle(classes='bottom'):
             with Center(classes='player-panel'):
