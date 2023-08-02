@@ -30,14 +30,14 @@ from src.pages.home import HomePage
 
 
 __LOGGING_FORMAT = '[%(asctime)s] [%(process)d] %(filename)s:%(lineno)d - %(levelname)s - %(message)s'
-__DEFAULT_CONFIG = Path('./resources/config/default.yaml')
+__DEFAULT_CONFIG = Path(__file__).parent.joinpath('resources/config/default.yaml')
 
 
 class Application(App):
     """Class that represent the main application and inherits from the textual App class."""
 
     TITLE = ' Playlist'
-    CSS_PATH = 'resources/styles/application.css'
+    CSS_PATH = Path(__file__).parent.joinpath('resources/styles/application.css')
     BINDINGS = [
         Binding('q', 'quit', 'Quit', show=True),
         Binding('h', 'home', 'Home', show=True),

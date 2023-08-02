@@ -141,6 +141,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
         progress_bar = self.query_one(ProgressStatusWidget)
         progress_bar.set_status(ProgressStatusWidget.Status.PLAYING)
+        progress_bar.total_seconds = f'{(int(song.seconds) // 60):02}:{(int(song.seconds) % 60):02}'
 
         if self.selected_playlist:
             self.selected_playlist.select(song.path)
@@ -182,16 +183,12 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
     def action_previous_song(self) -> None:
         """Plays the previous song in the tracklist."""
         playlist = self.query_one(TracklistWidget)
-        if playlist.index:
-            playlist.index -= 1
-            playlist.action_select_cursor()
+        playlist.previous_song()
 
     def action_next_song(self) -> None:
         """Plays the next song in the tracklist."""
         playlist = self.query_one(TracklistWidget)
-        if playlist.index is not None:
-            playlist.index += 1
-            playlist.action_select_cursor()
+        playlist.next_song()
 
     def action_load_directory_path(self) -> None:
         """Opens the input widget to load a directory path."""
@@ -243,31 +240,26 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             notification.show(f'[#FFFF00] [#CC0000]directory "{path}" not found')
             search_input.focus()
 
-    def make_progress(self) -> None:
+    async def make_progress(self) -> None:
         """Called automatically to advance the progress bar."""
         playlist = self.query_one(TracklistWidget)
-        song = cast(SongWidget, playlist.current_song)
+        if playlist.current_song is not None and self._playing:
+            song = SongWidget(playlist.current_song)
+            current_position = int((mixer.music.get_pos() / 1000) + self._start_position)
 
-        if song is not None and song.frame_rate and song.buffer:
-            if self._playing:
-                current_position = int((mixer.music.get_pos() / 1000) + self._start_position)
-                song_time_bar = self.query_one(ProgressStatusWidget)
-                song_time_bar.update(total=song.seconds, progress=current_position)
+            progress_bar = self.query_one(ProgressStatusWidget)
+            progress_bar.set_progress(current_position)
 
-                progress_bar = self.query_one(ProgressStatusWidget)
-                progress_bar.set_progress(current_position, song.seconds)
+            song_label = cast(Label, self.query_one('#song-label'))
+            song_label.update(song.path.name)
 
-                song_label = cast(Label, self.query_one('#song-label'))
-                song_label.update(song.path.name)
+            if self.config.appearance.widgets.home.spectrum and song.frame_rate and song.buffer:
+                effects_label = cast(Label, self.query_one('#effects-label'))
+                current_ms = int(mixer.music.get_pos() * song.frame_rate / 1000)
+                effects_label.update(self.__spectrum(song.buffer[current_ms : current_ms + 100 : 2], (2, 12)))
 
-                if self.config.appearance.widgets.home.spectrum:
-                    effects_label = cast(Label, self.query_one('#effects-label'))
-                    current_ms = int(mixer.music.get_pos() * song.frame_rate / 1000)
-                    effects_label.update(self.__spectrum(song.buffer[current_ms : current_ms + 100 : 2], (2, 12)))
-
-                if not mixer.music.get_busy() and playlist.index is not None:
-                    playlist.index += 1
-                    playlist.action_select_cursor()
+            if not mixer.music.get_busy() and playlist.index is not None:
+                playlist.next_song()
 
     def action_save_playlist(self) -> None:
         """Saves the current playlist."""
@@ -486,7 +478,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         """Handles events on the mounting of the home page."""
         super().on_mount()
 
-        self.set_interval(1 / 10, self.make_progress, pause=False)
+        self.set_interval(0.5, self.make_progress, pause=False)
 
         if self.selected_directory is not None:
             self._load_directory(self.selected_directory)
