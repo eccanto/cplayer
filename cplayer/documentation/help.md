@@ -34,6 +34,7 @@ Available keymaps.
 | ctrl+up         | `playlist` | Up Song                            |
 | ctrl+down       | `playlist` | Down Song                          |
 | o               | `playlist` | Change playlist order              |
+mute
 
 ## Configuration
 

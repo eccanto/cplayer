@@ -5,6 +5,7 @@ from typing import Callable, List, Optional, cast
 
 import numpy
 from pydub import AudioSegment
+from pydub.logging_utils import logging
 from pygame import mixer
 from rich.console import Console
 from textual.app import ComposeResult
@@ -17,7 +18,7 @@ from typing_extensions import Self
 class SongWidget(ListItem):
     """Song widget."""
 
-    def __init__(self, path: Path, *args, **kwargs) -> None:
+    def __init__(self, path: Path, on_play: Callable[['SongWidget'], None], *args, **kwargs) -> None:
         """Initializes the Widget object.
 
         :param path: The path to the audio file.
@@ -26,8 +27,11 @@ class SongWidget(ListItem):
         """
         super().__init__(*args, **kwargs)
 
-        self.label = Label(f'♪ {path.name}')
         self.path = path
+        self.on_play = on_play
+
+        self.status_label = Label('')
+        self.label = Label(path.name)
 
         self._seconds = None
         self._audio = None
@@ -48,14 +52,11 @@ class SongWidget(ListItem):
 
     @selected.setter
     def selected(self, is_selected: bool) -> None:
-        pass
-        # self._selected = is_selected
+        if is_selected:
+            logging.info('selecting song "%s"', self.path)
 
-        # status_label = cast(Label, self.query_one('#status'))
-        # if is_selected:
-        #     status_label.update('x')
-        # else:
-        #     status_label.update('')
+        self._selected = is_selected
+        self.status_label.update('[#00FF00]' if is_selected else '')
 
     def compose(self) -> ComposeResult:
         """Composes the elements for the List Item.
@@ -63,13 +64,12 @@ class SongWidget(ListItem):
         :returns: The composed elements for the widget.
         """
         with Horizontal():
-            yield Label('', id='status')
+            yield self.status_label
             yield self.label
 
     def play(self) -> None:
         """Plays the audio associated with the song."""
-        mixer.music.load(self.path)
-        mixer.music.play()
+        self.on_play(self)
 
     def update(self, path: Path) -> None:
         """Updates the song widget with a new audio file.
@@ -77,7 +77,7 @@ class SongWidget(ListItem):
         :param path: The path to the new audio file.
         """
         self.path = path
-        self.label.update(f'♪ {path.name}')
+        self.label.update(path.name)
 
     @property
     def seconds(self):
@@ -163,7 +163,7 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
         self.items_length = 0
         self.items_offset = 0
 
-        self._add_children(*[SongWidget(Path()) for i in range(self._MAX_SIZE)])
+        self._add_children(*[SongWidget(Path(), on_play=self.on_select) for i in range(self._MAX_SIZE)])
         self._hide()
 
     def on_mount(self) -> None:
@@ -190,6 +190,11 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
 
         return super().refresh(*args, **kwargs)
 
+    def clean(self) -> None:
+        """Cleans seleted song in the tracklist."""
+        for song in self.children:
+            song.selected = False
+
     def next_song(self) -> None:
         self.action_cursor_down()
         self.action_select_cursor()
@@ -201,8 +206,11 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
     def action_select_cursor(self) -> None:
         """Performs the action associated with selecting a song in the tracklist."""
         if self.highlighted_child:
+            self.clean()
+
             self.current_song = self.highlighted_child.path
             self.highlighted_child.selected = True
+
             self.on_select(self.highlighted_child)
 
     def action_cursor_left(self) -> None:
@@ -224,11 +232,16 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
             raw_index = self.items_offset + index
             if 0 <= raw_index < self.items_length:
                 song.update(self.items[raw_index])
+
+                is_selected = song.path == self.current_song
+                if is_selected != song.selected:
+                    song.selected = is_selected
+
                 song.visible = True
             else:
                 break
 
-    async def action_cursor_down(self) -> None:
+    def action_cursor_down(self) -> None:
         """Highlight the previous item in the list."""
         if self.index is not None and self.items_length:
             if self.index < self.items_length - 1:
@@ -244,7 +257,7 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
         else:
             self.index = 0
 
-    async def action_cursor_up(self) -> None:
+    def action_cursor_up(self) -> None:
         """Highlight the next item in the list."""
         if self.index is not None and self.items_length:
             if self.index > 0:

@@ -7,7 +7,7 @@ from typing import Optional, Self, Tuple, Union, cast
 from pygame import mixer
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Center, Horizontal, Middle, Vertical
+from textual.containers import Horizontal, Middle
 from textual.widgets import Label
 
 from src.components.file_explorer import FileExplorerWidget
@@ -45,6 +45,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         Binding('ctrl+up', 'up_song_position', 'Up Song', show=False),
         Binding('ctrl+down', 'down_song_position', 'Down Song', show=False),
         Binding('o', 'change_order', 'Change playlist order', show=False),
+        Binding('m', 'mute_song', 'Mute', show=True),
     ]
 
     def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
@@ -63,6 +64,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
         self._start_position = 0
         self._playing = False
+        self._volume = 0.75
 
         self.selected_directory = path
         self.selected_playlist: Optional[PlayList] = None
@@ -87,14 +89,16 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
     def action_decrease_volume(self) -> None:
         """Decreases the volume level."""
-        mixer.music.set_volume((mixer.music.get_volume() - 0.1) if (mixer.music.get_volume() > 0) else 0)
+        self._volume = (mixer.music.get_volume() - 0.1) if (mixer.music.get_volume() > 0) else 0
+        mixer.music.set_volume(self._volume)
 
         volume_bar = self.query_one(VolumeBarWidget)
         volume_bar.update(total=1, progress=mixer.music.get_volume())
 
     def action_increase_volume(self) -> None:
         """Increases the volume level."""
-        mixer.music.set_volume(1 if (mixer.music.get_volume() > 1) else (mixer.music.get_volume() + 0.1))
+        self._volume = 1 if (mixer.music.get_volume() > 1) else (mixer.music.get_volume() + 0.1)
+        mixer.music.set_volume(self._volume)
 
         volume_bar = self.query_one(VolumeBarWidget)
         volume_bar.update(total=1, progress=mixer.music.get_volume())
@@ -129,22 +133,39 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         search_input.display = True
         search_input.focus()
 
+    def action_mute_song(self) -> None:
+        """Mutes the songs."""
+        mixer.music.set_volume(0 if mixer.music.get_volume() else self._volume)
+
+        volume_bar = self.query_one(VolumeBarWidget)
+        volume_bar.muted = mixer.music.get_volume() == 0
+        volume_bar.update(progress=mixer.music.get_volume())
+
     def play_song(self, song: SongWidget) -> None:
         """Plays the selected song.
 
         :param song: The song to be played.
         """
-        self._start_position = 0
-        song.play()
+        try:
+            self._start_position = 0
+            mixer.music.load(song.path)
+            mixer.music.play()
 
-        self._playing = True
+            self._playing = True
 
-        progress_bar = self.query_one(ProgressStatusWidget)
-        progress_bar.set_status(ProgressStatusWidget.Status.PLAYING)
-        progress_bar.total_seconds = f'{(int(song.seconds) // 60):02}:{(int(song.seconds) % 60):02}'
+            progress_bar = self.query_one(ProgressStatusWidget)
+            progress_bar.set_status(ProgressStatusWidget.Status.PLAYING)
+            progress_bar.total_seconds = f'{(int(song.seconds) // 60):02}:{(int(song.seconds) % 60):02}'
 
-        if self.selected_playlist:
-            self.selected_playlist.select(song.path)
+            if self.selected_playlist:
+                self.selected_playlist.select(song.path)
+        except Exception as error:
+            logging.error('Error playing the song "%s": %s', song.path, error)
+
+            playlist = self.query_one(TracklistWidget)
+            playlist.next_song()
+
+            self.refresh()
 
     def action_reset(self) -> None:
         """Resets the currently selected song."""
@@ -244,7 +265,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         """Called automatically to advance the progress bar."""
         playlist = self.query_one(TracklistWidget)
         if playlist.current_song is not None and self._playing:
-            song = SongWidget(playlist.current_song)
+            song = SongWidget(playlist.current_song, lambda _: None)
             current_position = int((mixer.music.get_pos() / 1000) + self._start_position)
 
             progress_bar = self.query_one(ProgressStatusWidget)
@@ -462,17 +483,11 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
         yield FileExplorerWidget(Path('~').expanduser(), on_select=self.on_select_path)
 
-        with Middle(classes='bottom'):
-            with Center(classes='player-panel'):
-                with Horizontal(classes='full-width'):
-                    with Vertical(classes='panel'):
-                        yield Label('-', id='song-label', classes='bold')
-                        with Horizontal():
-                            yield ProgressStatusWidget()
-                            yield VolumeBarWidget()
-                    if self.config.appearance.widgets.home.spectrum:
-                        with Vertical(classes='panel'):
-                            yield Label(self.__spectrum([], (2, 12)), id='effects-label', classes='bold')
+        with Middle(classes='bottom full-width'):
+            with Horizontal(classes='full-width panel'):
+                yield ProgressStatusWidget()
+                yield Label('-', id='song-label', classes='bold')
+                yield VolumeBarWidget(default_volume=self._volume)
 
     def on_mount(self) -> None:
         """Handles events on the mounting of the home page."""

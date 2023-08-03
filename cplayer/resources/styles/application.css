@@ -23,15 +23,6 @@ Horizontal {
   height: auto;
 }
 
-Vertical {
-  width: auto;
-  height: auto;
-}
-
-Center {
-  padding: 2;
-}
-
 .bold {
   text-style: bold;
 }
@@ -42,15 +33,8 @@ Center {
 }
 
 .bottom {
-  margin-bottom: 0;
   height: auto;
   padding: 0;
-}
-
-.player-panel {
-  margin-bottom: 0;
-  height: auto;
-  padding: 1;
 }
 
 .full-width {
