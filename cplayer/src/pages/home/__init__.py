@@ -69,6 +69,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         self.selected_directory = path
         self.selected_playlist: Optional[PlayList] = None
 
+        self.label_position = Label('NaN/NaN', classes='song-position')
+
     def __spectrum(self, data, shape: Tuple[int, int]) -> str:
         """Generates audio spectrum data as a string.
 
@@ -93,7 +95,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         mixer.music.set_volume(self._volume)
 
         volume_bar = self.query_one(VolumeBarWidget)
-        volume_bar.update(total=1, progress=mixer.music.get_volume())
+        volume_bar.update(progress=self._volume)
 
     def action_increase_volume(self) -> None:
         """Increases the volume level."""
@@ -101,7 +103,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         mixer.music.set_volume(self._volume)
 
         volume_bar = self.query_one(VolumeBarWidget)
-        volume_bar.update(total=1, progress=mixer.music.get_volume())
+        volume_bar.update(progress=self._volume)
 
     def action_play_pause(self) -> None:
         """Toggles play/pause for the currently playing song."""
@@ -436,6 +438,9 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         else:
             notification.show(f'[#FFFF00] [#CC0000]file "{path}" not found')
 
+    def on_change_position(self, index: int, total: int) -> None:
+        self.label_position.update(f'{index}/{total}')
+
     def compose(self) -> ComposeResult:
         """Composes the elements for the home page.
 
@@ -475,6 +480,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             self.play_song,
             self.action_cursor_left,
             self.action_cursor_right,
+            on_change_position=self.on_change_position,
             order=next(
                 (order for order in PlaylistOrder if order.value == self.config.general.playlist.order),
                 PlaylistOrder.ASCENDING,
@@ -485,6 +491,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
         with Middle(classes='bottom full-width'):
             with Horizontal(classes='full-width panel'):
+                yield self.label_position
                 yield ProgressStatusWidget()
                 yield Label('-', id='song-label', classes='bold')
                 yield VolumeBarWidget(default_volume=self._volume)
@@ -500,6 +507,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         elif self.config.general.playlist.selected:
             self.selected_playlist = PlayList(Path(self.config.general.playlist.selected))
             self.load_playlist()
+
+        mixer.music.set_volume(self._volume)
 
     def focus(self, scroll_visible: bool = True) -> Self:
         """Sets the focus on the home page.

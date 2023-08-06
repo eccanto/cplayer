@@ -1,12 +1,11 @@
 import random
 from enum import Enum
 from pathlib import Path
-from typing import Callable, List, Optional, cast
+from typing import Callable, List, Optional
 
 import numpy
 from pydub import AudioSegment
 from pydub.logging_utils import logging
-from pygame import mixer
 from rich.console import Console
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -127,7 +126,7 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
     children: List[SongWidget]
     displayed_children: List[SongWidget]  # type: ignore
 
-    _FIXED_SIZE = 14
+    _FIXED_SIZE = 12
     _MAX_SIZE = 100
 
     def __init__(
@@ -135,6 +134,7 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
         on_select: Callable[[SongWidget], None],
         on_cursor_left: Callable[[], None],
         on_cursor_right: Callable[[], None],
+        on_change_position: Callable[[int, int], None],
         order: PlaylistOrder = PlaylistOrder.ASCENDING,
         **kwargs,
     ) -> None:
@@ -151,6 +151,7 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
         self.on_select = on_select
         self.on_cursor_left = on_cursor_left
         self.on_cursor_right = on_cursor_right
+        self.on_change_position = on_change_position
 
         self.order = order
 
@@ -239,16 +240,15 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
 
                 song.visible = True
             else:
-                break
+                song.visible = False
 
     def action_cursor_down(self) -> None:
         """Highlight the previous item in the list."""
         if self.index is not None and self.items_length:
-            if self.index < self.items_length - 1:
-                # self.select_index(self.index + 1)
+            if self.index < self.length - 1:
                 self.index += 1
             elif self.index >= self.length - 1:
-                self.items_offset = min(self.items_length - 1, self.items_offset + 1)
+                self.items_offset = min(self.items_length - self.length, self.items_offset + 1)
                 self._scroll()
             else:
                 self.items_offset = 0
@@ -257,11 +257,12 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
         else:
             self.index = 0
 
+        self.on_change_position(self.items_offset + self.index, self.items_length)
+
     def action_cursor_up(self) -> None:
         """Highlight the next item in the list."""
         if self.index is not None and self.items_length:
             if self.index > 0:
-                # self.select_index(self.index - 1)
                 self.index -= 1
             else:
                 self.items_offset = max(self.items_offset - 1, 0)
@@ -269,7 +270,9 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
         else:
             self.index = 0
 
-    def update(self, paths: List[Path], position: Optional[int] = 0, sort: bool = False) -> None:
+        self.on_change_position(self.items_offset + self.index, self.items_length)
+
+    def update(self, paths: List[Path], position: int = 0, sort: bool = False) -> None:
         """Updates the tracklist with a new list of audio file paths.
 
         :param paths: A list of paths to the audio files.
@@ -292,6 +295,8 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
 
         self.index = position
 
+        self.on_change_position(self.items_offset + self.index, self.items_length)
+
     def add(self, paths: List[Path]) -> None:
         """Adds new file paths to the tracklist.
 
@@ -311,6 +316,8 @@ class TracklistWidget(ListView):  # pylint: disable=too-many-instance-attributes
                 self._scroll()
                 self.select_index(0)
                 break
+
+        self.on_change_position(self.items_offset + self.index, self.items_length)
 
     def select_index(self, index: int) -> None:
         """Selects a song in the tracklist based on its index.
