@@ -15,7 +15,7 @@ from src.components.input_label import InputLabelWidget
 from src.components.notification import NotificationWidget
 from src.components.options_list import OptionsListWidget, OptionWidget
 from src.components.progress_bar import ProgressStatusWidget
-from src.components.tracklist import PlaylistOrder, SongWidget, TracklistWidget
+from src.components.tracklist import PlaylistOrder, Song, TracklistWidget
 from src.components.volume_bar import VolumeBarWidget
 from src.elements.config import Config
 from src.elements.playlist import PlayList
@@ -46,6 +46,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         Binding('ctrl+down', 'down_song_position', 'Down Song', show=False),
         Binding('o', 'change_order', 'Change playlist order', show=False),
         Binding('m', 'mute_song', 'Mute', show=True),
+        Binding(':', 'go_to_position', 'Go to position', show=False),
     ]
 
     def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
@@ -89,6 +90,23 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
         return ' '.join(points[: shape[1]]) + '\n' + ' '.join(points[shape[1] : 2 * shape[1]])
 
+    def action_go_to_position(self) -> None:
+        goto_input = cast(InputLabelWidget, self.query_one('#goto-input'))
+        goto_input.value = ''
+        goto_input.show()
+
+    async def on_go_to_position(self) -> None:
+        goto_input = cast(InputLabelWidget, self.query_one('#goto-input'))
+        goto_input.hide()
+
+        playlist = self.query_one(TracklistWidget)
+        try:
+            playlist.go_to(int(goto_input.value))
+        except ValueError:
+            logging.error('invalid position value: %s', goto_input.value)
+
+        playlist.focus()
+
     def action_decrease_volume(self) -> None:
         """Decreases the volume level."""
         self._volume = (mixer.music.get_volume() - 0.1) if (mixer.music.get_volume() > 0) else 0
@@ -130,10 +148,16 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             mixer.music.play(0, self._start_position)
 
     def action_filter(self) -> None:
-        """Opens the file explorer to filter songs in the current playlist."""
-        search_input = self.query_one('#search-input')
-        search_input.display = True
-        search_input.focus()
+        """Opens a input text to filter songs in the current playlist."""
+        filter_input = cast(InputLabelWidget, self.query_one('#filter-input'))
+        filter_input.value = ''
+        filter_input.show()
+
+    def action_search(self) -> None:
+        """Opens a input text to search songs in the current playlist."""
+        search_input = cast(InputLabelWidget, self.query_one('#search-input'))
+        search_input.value = ''
+        search_input.show()
 
     def action_mute_song(self) -> None:
         """Mutes the songs."""
@@ -143,7 +167,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         volume_bar.muted = mixer.music.get_volume() == 0
         volume_bar.update(progress=mixer.music.get_volume())
 
-    def play_song(self, song: SongWidget) -> None:
+    def play_song(self, song: Song) -> None:
         """Plays the selected song.
 
         :param song: The song to be played.
@@ -189,19 +213,31 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
     async def filter_songs(self) -> None:
         """Filters and loads songs based on user input."""
-        search_input = cast(InputLabelWidget, self.query_one('#search-input'))
-        search_input.hide()
+        filter_input = cast(InputLabelWidget, self.query_one('#filter-input'))
+        filter_input.hide()
 
-        pattern = search_input.value.lower()
+        pattern = filter_input.value.lower()
         logging.info('applying "%s" filter...', pattern)
 
         playlist = self.query_one(TracklistWidget)
         playlist.filter(pattern)
         playlist.display = True
-        playlist.select_index(0)
         playlist.focus()
 
         self.refresh()
+
+    async def search_songs(self) -> None:
+        """Searchs a song based on user input."""
+        search_input = cast(InputLabelWidget, self.query_one('#search-input'))
+        search_input.hide()
+
+        pattern = search_input.value.lower()
+        logging.info('applying "%s" search...', pattern)
+
+        playlist = self.query_one(TracklistWidget)
+        playlist.search(pattern)
+        playlist.display = True
+        playlist.focus()
 
     def action_previous_song(self) -> None:
         """Plays the previous song in the tracklist."""
@@ -236,9 +272,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
 
     async def load_directory(self) -> None:
         """Loads the selected directory path."""
-        search_input = cast(InputLabelWidget, self.query_one('#directory-input'))
-
-        self._load_directory(Path(search_input.value))
+        directory_input = cast(InputLabelWidget, self.query_one('#directory-input'))
+        self._load_directory(Path(directory_input.value))
 
     def _load_directory(self, path: Path) -> None:
         """Loads the contents of the selected directory.
@@ -247,27 +282,27 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         """
         logging.info('loadding path: "%s" (exists=%s)...', path, path.exists())
 
-        search_input = cast(InputLabelWidget, self.query_one('#directory-input'))
+        directory_input = cast(InputLabelWidget, self.query_one('#directory-input'))
 
         notification = self.query_one(NotificationWidget)
         notification.hide()
 
         if path.exists():
-            search_input.hide()
+            directory_input.hide()
 
             playlist = self.query_one(TracklistWidget)
-            playlist.update(list(path.glob('*.mp3')), sort=True)
+            playlist.set_songs(list(path.glob('*.mp3')), sort=True)
             playlist.display = True
             playlist.focus()
         else:
             notification.show(f'[#FFFF00] [#CC0000]directory "{path}" not found')
-            search_input.focus()
+            directory_input.focus()
 
     async def make_progress(self) -> None:
         """Called automatically to advance the progress bar."""
         playlist = self.query_one(TracklistWidget)
         if playlist.current_song is not None and self._playing:
-            song = SongWidget(playlist.current_song, lambda _: None)
+            song = playlist.current_song
             current_position = int((mixer.music.get_pos() / 1000) + self._start_position)
 
             progress_bar = self.query_one(ProgressStatusWidget)
@@ -313,7 +348,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         self.config.general.playlist.order = playlist.order.value
         self.config.save()
 
-        playlist.update(playlist.items, sort=True)
+        playlist.set_songs(playlist.items, sort=True)
         playlist.display = True
         playlist.focus()
 
@@ -347,7 +382,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             logging.info('loading playlist "%s" with %s items...', self.selected_playlist.name, len(songs))
 
             playlist = self.query_one(TracklistWidget)
-            playlist.update(songs)
+            playlist.set_songs(songs)
             playlist.display = True
             playlist.focus()
 
@@ -387,14 +422,12 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
     async def action_up_song_position(self) -> None:
         """Moves the selected song up in the playlist."""
         playlist = self.query_one(TracklistWidget)
-        if playlist.displayed_index is not None:
-            await playlist.swap(playlist.displayed_index - 1)
+        await playlist.swap(playlist.index - 1)
 
     async def action_down_song_position(self) -> None:
         """Moves the selected song down in the playlist."""
         playlist = self.query_one(TracklistWidget)
-        if playlist.displayed_index is not None:
-            await playlist.swap(playlist.displayed_index + 1)
+        await playlist.swap(playlist.index + 1)
 
     async def action_delete_song(self) -> None:
         """Deletes the selected song from the playlist."""
@@ -403,7 +436,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             songs = [widget.path for widget in playlist.children]
             del songs[playlist.index]
 
-            playlist.update(
+            playlist.set_songs(
                 songs,
                 position=(len(playlist.children) - 1) if (playlist.index >= len(playlist.children)) else playlist.index,
             )
@@ -439,7 +472,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             notification.show(f'[#FFFF00] [#CC0000]file "{path}" not found')
 
     def on_change_position(self, index: int, total: int) -> None:
-        self.label_position.update(f'{index}/{total}')
+        self.label_position.update(f'{index + 1}/{total}')
 
     def compose(self) -> ComposeResult:
         """Composes the elements for the home page.
@@ -449,6 +482,12 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
         yield InputLabelWidget(
             ' filter text:',
             on_enter=self.filter_songs,
+            on_quit=self.on_input_quit,
+            id='filter-input',
+        )
+        yield InputLabelWidget(
+            ' search text:',
+            on_enter=self.search_songs,
             on_quit=self.on_input_quit,
             id='search-input',
         )
@@ -469,6 +508,12 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods
             on_enter=self.add_songs,
             on_quit=self.on_input_quit,
             id='add-songs-input',
+        )
+        yield InputLabelWidget(
+            ' go to position:',
+            on_enter=self.on_go_to_position,
+            on_quit=self.on_input_quit,
+            id='goto-input',
         )
 
         yield NotificationWidget('')

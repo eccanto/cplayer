@@ -62,6 +62,11 @@ class InputLabelWidget(HiddenWidget):
         input_widget = self.query_one(Input)
         return input_widget.value
 
+    @value.setter
+    def value(self, text: str) -> None:
+        input_widget = self.query_one(Input)
+        input_widget.value = text
+
     def action_quit(self) -> None:
         """Perform the action associated with quitting the input label widget."""
         self.on_quit(self)
