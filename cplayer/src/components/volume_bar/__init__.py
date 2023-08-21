@@ -27,6 +27,7 @@ class VolumeBarWidget(Widget):
 
     @property
     def muted(self) -> bool:
+        """Indicates whether the song is muted."""
         return self._muted
 
     @muted.setter

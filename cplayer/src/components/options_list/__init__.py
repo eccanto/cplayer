@@ -1,26 +1,27 @@
 from pathlib import Path
-from typing import Callable, List, Self, Union, cast
+from typing import Any, Callable, List, Self, Union
 
-from textual._node_list import NodeList
 from textual.app import ComposeResult
-from textual.containers import Middle
-from textual.widget import Widget
-from textual.widgets import Label, ListItem, ListView
+from textual.binding import Binding
+from textual.containers import Middle, VerticalScroll
+from textual.widgets import Label
 
-from src.components.hidden_widget import HiddenWidget
+from cplayer.src.components.hidden_widget import HiddenWidget
 
 
-class CustomListView(ListView):
+class CustomListView(VerticalScroll):
     """Custom list view."""
 
     BINDINGS = [
-        ('escape', 'quit', 'Quit'),
-        ('enter', 'select_option', 'Select Option'),
+        Binding('up', 'cursor_up', 'Cursor Up', show=False),
+        Binding('down', 'cursor_down', 'Cursor Down', show=False),
+        Binding('escape', 'quit', 'Quit'),
+        Binding('enter', 'select_option', 'Select Option'),
     ]
 
     def __init__(
         self,
-        on_quit: Callable[[Widget], None],
+        on_quit: Callable[[], None],
         on_select: Callable[[Union[Path, str]], None],
         *children,
     ) -> None:
@@ -35,40 +36,62 @@ class CustomListView(ListView):
         self._on_quit = on_quit
         self._on_select = on_select
 
-    def clean(self) -> None:
-        """Removes all child nodes from the list view."""
-        self._nodes = NodeList()
+        self.options: List[Option] = []
+        self.index = 0
 
-    def add(self, items: List['OptionWidget']) -> None:
-        """Add a list of option objects to the list view.
+        self.content = Label('No data.')
 
-        :param items: A list of option objects to add.
+    def compose(self) -> ComposeResult:
+        """Composes the widget.
+
+        :returns: The widget object representing the composed widget.
         """
-        self._add_children(*items)
+        yield self.content
 
-    def update(self, options: List['OptionWidget']) -> None:
+    def draw(self) -> None:
+        """Draws the listview with the current status."""
+        rows = []
+        for index, option in enumerate(self.options):
+            rows.append(
+                f'[{"#FF8000" if (index == self.index) else "#CECECE"}]{option.prefix}{option.to_string(option.data)}'
+            )
+        self.content.update('\n'.join(rows))
+
+    def update(self, options: List['Option']) -> None:
         """Updates the list view with a new set of options.
 
         :param options: A list of option objects representing the new options.
         """
-        self._nodes = NodeList()
-
-        for option in options:
-            option.highlighted = False
-            self._add_child(option)
-
+        self.options = options
         self.index = 0
+        self.draw()
+
+    def action_quit(self) -> None:
+        """Calls the quit callback."""
+        self._on_quit()
+
+    def action_cursor_down(self) -> None:
+        """Highlight the previous item in the list."""
+        if self.index < len(self.options) - 1:
+            self.index += 1
+            self.draw()
+
+    def action_cursor_up(self) -> None:
+        """Highlight the next item in the list."""
+        if self.index > 0:
+            self.index -= 1
+            self.draw()
 
     def action_select_option(self) -> None:
         """Runs the `self.on_select` callback with the selected option."""
-        if self.highlighted_child:
-            self._on_select(cast(OptionWidget, self.highlighted_child).data)
+        if self.options:
+            self._on_select(self.options[self.index].data)
 
 
-class OptionWidget(ListItem):
+class Option:  # pylint: disable=too-few-public-methods
     """Option in the list view."""
 
-    def __init__(self, data: Union[Path, str], prefix: str, *args, **kwargs) -> None:
+    def __init__(self, data: Union[Path, str], prefix: str, to_string: Callable[[Any], str]) -> None:
         """Initializes the Widget object.
 
         :param data: The data associated with the option.
@@ -76,17 +99,9 @@ class OptionWidget(ListItem):
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(
-            Label(
-                f'{prefix} {data.name if isinstance(data, Path) else data}'
-                if prefix
-                else (data.name if isinstance(data, Path) else data)
-            ),
-            *args,
-            **kwargs,
-        )
-
         self.data = data
+        self.prefix = prefix
+        self.to_string = to_string
 
 
 class OptionsListWidget(HiddenWidget):
@@ -97,7 +112,7 @@ class OptionsListWidget(HiddenWidget):
     def __init__(
         self,
         label: str,
-        on_quit: Callable[[Widget], None],
+        on_quit: Callable[[HiddenWidget], None],
         on_select: Callable[[Union[Path, str]], None],
         *children,
         **kwargs,
@@ -117,7 +132,7 @@ class OptionsListWidget(HiddenWidget):
         self._on_select = on_select
 
         self.label = Label(self._label, classes='bold')
-        self.list_view = CustomListView(self._on_quit, self._on_select, *children)
+        self.list_view = CustomListView(lambda: self._on_quit(self), self._on_select, *children)
 
     def compose(self) -> ComposeResult:
         """Composes the layout for the Widget.

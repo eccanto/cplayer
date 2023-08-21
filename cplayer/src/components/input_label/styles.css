@@ -1,1 +1,6 @@
-
+InputLabelWidget {
+    margin: 0;
+    padding: 0;
+    height: 5;
+    min-width: 50%;
+}

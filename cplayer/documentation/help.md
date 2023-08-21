@@ -29,7 +29,7 @@ Available keymaps.
 | s               | `playlist` | Search                             |
 | f               | `playlist` | Filter                             |
 | S               | `playlist` | Save Playlist                      |
-| delete          | `playlist` | Delete Song                        |
+| ctrl+delete     | `playlist` | Delete Song                        |
 | A               | `playlist` | Add songs                          |
 | ctrl+up         | `playlist` | Up Song                            |
 | ctrl+down       | `playlist` | Down Song                          |

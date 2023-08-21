@@ -4,7 +4,7 @@ from typing import Optional
 from textual.app import ComposeResult
 from textual.widgets import Label
 
-from src.components.hidden_widget import HiddenWidget
+from cplayer.src.components.hidden_widget import HiddenWidget
 
 
 class NotificationWidget(HiddenWidget):
@@ -38,12 +38,12 @@ class NotificationWidget(HiddenWidget):
         label = self.query_one(Label)
         label.update(message)
 
-    def show(self, message: Optional[str] = None) -> None:
+    def show(self, focus: bool = True, message: Optional[str] = None) -> None:
         """Shows the notification.
 
         :param message: Optional message to update the content of the notification before showing it.
         """
-        self.display = True
-
         if message is not None:
             self.update(message)
+
+        super().show(focus)

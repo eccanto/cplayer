@@ -5,7 +5,7 @@ from typing import cast
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widget import Widget
-from textual.widgets import Label, ProgressBar
+from textual.widgets import Label
 
 
 class ProgressStatusWidget(Widget):
@@ -24,6 +24,7 @@ class ProgressStatusWidget(Widget):
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     def __init__(self, *args, **kwargs) -> None:
+        """Initializes the widget object."""
         super().__init__(*args, **kwargs)
 
         self.total_seconds = '00:00'
@@ -51,6 +52,4 @@ class ProgressStatusWidget(Widget):
 
         :param current_seconds: The current progress in seconds.
         """
-        self.progress_label.update(
-            f'{(current_seconds // 60):02}:{(current_seconds % 60):02}/{self.total_seconds}'
-        )
+        self.progress_label.update(f'{(current_seconds // 60):02}:{(current_seconds % 60):02}/{self.total_seconds}')

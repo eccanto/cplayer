@@ -1,11 +1,13 @@
 OptionsListWidget {
   background: transparent;
+  min-width: 100%;
 }
 
-ListView {
+CustomListView {
   margin: 1 2;
 }
 
 Middle {
   padding: 12;
+  width: 100%;
 }

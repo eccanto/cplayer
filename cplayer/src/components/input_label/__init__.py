@@ -2,10 +2,9 @@ from pathlib import Path
 from typing import Callable, Coroutine, Self
 
 from textual.app import ComposeResult
-from textual.containers import Center
-from textual.widgets import Input, Label
+from textual.widgets import Input
 
-from src.components.hidden_widget import HiddenWidget
+from cplayer.src.components.hidden_widget import HiddenWidget
 
 
 class InputLabelWidget(HiddenWidget):
@@ -35,7 +34,7 @@ class InputLabelWidget(HiddenWidget):
         """
         super().__init__(*args, **kwargs)
 
-        self.input_label = input_label
+        self.input_widget = Input(placeholder=input_label)
 
         self.on_enter = on_enter
         self.on_quit = on_quit
@@ -45,13 +44,8 @@ class InputLabelWidget(HiddenWidget):
 
         :returns: The ComposeResult object representing the composed layout.
         """
-        with Center():
-            yield Label(self.input_label)
-
-            input_widget = Input()
-            input_widget.action_submit = self.on_enter  # type: ignore
-
-            yield input_widget
+        self.input_widget.action_submit = self.on_enter  # type: ignore
+        yield self.input_widget
 
     @property
     def value(self) -> str:
@@ -59,13 +53,11 @@ class InputLabelWidget(HiddenWidget):
 
         :returns: The current value of the input widget.
         """
-        input_widget = self.query_one(Input)
-        return input_widget.value
+        return self.input_widget.value
 
     @value.setter
     def value(self, text: str) -> None:
-        input_widget = self.query_one(Input)
-        input_widget.value = text
+        self.input_widget.value = text
 
     def action_quit(self) -> None:
         """Perform the action associated with quitting the input label widget."""
@@ -76,6 +68,5 @@ class InputLabelWidget(HiddenWidget):
 
         :param scroll_visible: Whether to scroll the widget into the visible area.
         """
-        input_widget = self.query_one(Input)
-        input_widget.focus(scroll_visible)
+        self.input_widget.focus(scroll_visible)
         return self

@@ -1,12 +1,12 @@
 """Singleton pattern implementation."""
 
-from typing import Dict, Type
+from typing import Any, Dict, Type
 
 
 class Singleton:  # pylint: disable=too-few-public-methods
     """Singleton Class that represents the implementation of the Singleton design pattern."""
 
-    _instances: Dict[Type['Singleton'], 'Singleton'] = {}
+    _instances: Dict[Type['Singleton'], Any] = {}
 
     def __new__(cls, *_args, **_kwargs):
         """Creates a new instance of the Singleton class or return an existing instance if available.

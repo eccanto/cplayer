@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Callable
 
-from src.components.hidden_widget import HiddenWidget
+from cplayer.src.components.hidden_widget import HiddenWidget
 
 
 class PageBase(HiddenWidget):

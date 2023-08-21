@@ -1,3 +1,2 @@
 include requirements.txt
-recursive-include cplayer/documentation *
 recursive-include cplayer/resources *

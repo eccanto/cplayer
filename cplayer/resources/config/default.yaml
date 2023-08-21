@@ -5,10 +5,6 @@ general:
         order: ascending
 
 appearance:
-    widgets:
-        home:
-            spectrum: false
-
     style: null
 
 development:

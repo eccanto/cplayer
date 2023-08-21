@@ -24,8 +24,11 @@ class HiddenWidget(Widget):
     def hide(self) -> None:
         """Hide the widget."""
         self.display = False
+        self.classes = 'hidden'
 
-    def show(self) -> None:
+    def show(self, focus: bool = True) -> None:
         """Show the widget."""
         self.display = True
-        self.focus()
+        self.classes = 'displayed'
+        if focus:
+            self.focus()

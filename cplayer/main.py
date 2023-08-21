@@ -24,9 +24,9 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header
 
-from src.elements.config import Config
-from src.pages.help import HelpPage
-from src.pages.home import HomePage
+from cplayer.src.elements.config import Config
+from cplayer.src.pages.help import HelpPage
+from cplayer.src.pages.home import HomePage
 
 
 __LOGGING_FORMAT = '[%(asctime)s] [%(process)d] %(filename)s:%(lineno)d - %(levelname)s - %(message)s'
@@ -106,8 +106,8 @@ if __name__ == '__main__':
     config = Config(default_data=__DEFAULT_CONFIG)
 
     logging.basicConfig(
-        filename=Path(config.development.logfile).expanduser(),
-        level=logging.getLevelName(config.development.level),
+        filename=Path(config.data.development.logfile).expanduser(),
+        level=logging.getLevelName(config.data.development.level),
         format=__LOGGING_FORMAT,
     )
 

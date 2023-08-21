@@ -10,14 +10,10 @@ from pydub.logging_utils import logging
 from rich.console import Console
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical, VerticalScroll
-from textual.widget import Widget
-from textual.widgets import Label, ListItem, ListView
+from textual.containers import VerticalScroll
+from textual.widgets import Label
 from typing_extensions import Self
 
-
-# ''
-# ''
 
 class Song:
     """Song item."""
@@ -42,6 +38,7 @@ class Song:
 
     @property
     def selected(self) -> bool:
+        """Indicates whether the song is selected."""
         return self._selected
 
     @selected.setter
@@ -101,7 +98,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
 
     _FIXED_SIZE = 11
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         on_select: Callable[[Song], None],
         on_cursor_left: Callable[[], None],
@@ -146,6 +143,10 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.focus()
 
     def compose(self) -> ComposeResult:
+        """Composes the widget.
+
+        :returns: The widget object representing the composed widget.
+        """
         yield self.content
 
     def refresh(self, *args, **kwargs) -> Self:
@@ -160,7 +161,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
 
             self.length = new_length
             self.index += delta
-            self._scroll()
+            self.draw()
 
             if self.current_song:
                 self.select(self.current_song.path)
@@ -172,24 +173,30 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.content.update('No data.')
 
     def go_to(self, position: int) -> None:
-        if position < 0:
+        """Moves the highlighted position to a specified position.
+
+        :param position: The destination position.
+        """
+        if position <= 0:
             self.index = 0
         else:
-            self.index = min(position, self.items_length - 1)
-        self._scroll()
+            self.index = min(position - 1, self.items_length - 1)
+        self.draw()
 
     def next_song(self) -> None:
+        """Goes to the next song."""
         self.action_cursor_down()
         self.action_select_cursor()
 
     def previous_song(self) -> None:
+        """Goes to the previous song."""
         self.action_cursor_up()
         self.action_select_cursor()
 
     def action_select_cursor(self) -> None:
         """Performs the action associated with selecting a song in the tracklist."""
         self.current_song = self.items[self.index]
-        self._scroll()
+        self.draw()
         self.on_select(self.current_song)
 
     def action_cursor_left(self) -> None:
@@ -200,17 +207,18 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         """Performs the action associated with moving the cursor to the right."""
         self.on_cursor_right()
 
-    def _scroll(self) -> None:
-        """Scrolls the tracklist to display new songs."""
+    def draw(self) -> None:
+        """Draws the tracklist to display new songs."""
         if self.filter_pattern is not None:
             items = [song for song in self.items if self.filter_pattern in song.path.name]
         else:
             items = self.items
 
         rows = []
-        for index, song in enumerate(items[self.index: self.index + self.length]):
+        for index, song in enumerate(items[self.index : self.index + self.length]):
+            is_current_song = self.current_song is not None and song.path == self.current_song.path
             rows.append(
-                f'[#CECECE]{"[#00FF00]" if (song == self.current_song) else ""} '
+                f'[#CECECE]{"[#00FF00]" if is_current_song else ""} '
                 f'[{"#FF8000" if (index == 0) else "#CECECE"}]{song.path.name}'
             )
 
@@ -221,13 +229,13 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         """Highlight the previous item in the list."""
         if self.index < self.items_length - 1:
             self.index += 1
-            self._scroll()
+            self.draw()
 
     def action_cursor_up(self) -> None:
         """Highlight the next item in the list."""
         if self.index:
             self.index -= 1
-            self._scroll()
+            self.draw()
 
     def set_songs(self, paths: List[Path], position: int = 0, sort: bool = False) -> None:
         """Updates the tracklist with a new list of audio file paths.
@@ -238,25 +246,31 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         """
         if sort:
             if self.order == PlaylistOrder.ASCENDING:
-                paths.sort()
+                paths.sort(key=lambda path: path.stem)
             elif self.order == PlaylistOrder.DESCENDANT:
-                paths.sort(reverse=True)
+                paths.sort(key=lambda path: path.stem, reverse=True)
             elif self.order == PlaylistOrder.RANDOM:
                 random.shuffle(paths)
 
         self.items = [Song(path, on_play=self.on_select) for path in paths]
-        self.items_unfilter = self.items
+        self.items_unfilter = self.items.copy()
         self.items_length = len(paths)
-        self.index = 0
-        self._scroll()
+        self.index = position
+        self.draw()
 
     def add(self, paths: List[Path]) -> None:
         """Adds new file paths to the tracklist.
 
         :param items: A list of paths to the audio files.
         """
-        self.items.extend([Song(path, on_play=self.on_select) for path in paths])
+        songs = [Song(path, on_play=self.on_select) for path in paths]
+
+        self.items_unfilter.extend(songs)
+
+        self.items.extend(songs)
         self.items_length = len(self.items)
+
+        self.draw()
 
     def select(self, path: Path) -> None:
         """Selects a song in the tracklist based on its path.
@@ -266,7 +280,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         for index, song in enumerate(self.items):
             if song.path == path:
                 self.index = index
-                self._scroll()
+                self.draw()
                 break
 
     def filter(self, pattern: str) -> None:
@@ -277,11 +291,11 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         if pattern:
             self.items = [song for song in self.items_unfilter if pattern.lower() in song.path.name.lower()]
         else:
-            self.items = self.items_unfilter
+            self.items = self.items_unfilter.copy()
 
         self.items_length = len(self.items)
         self.index = 0
-        self._scroll()
+        self.draw()
 
         if self.current_song:
             self.select(self.current_song.path)
@@ -295,7 +309,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             song = next((song for song in self.items if pattern.lower() in song.path.name.lower()), None)
             if not song:
                 song = max(
-                    [(SequenceMatcher(None, song.path.name, pattern).ratio(), song) for song in self.items],
+                    ((SequenceMatcher(None, song.path.name, pattern).ratio(), song) for song in self.items),
                     key=lambda data: data[0],
                 )[1]
             self.select(song.path)
@@ -317,4 +331,4 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.items[new_index] = current_item
 
         self.index = new_index
-        self._scroll()
+        self.draw()

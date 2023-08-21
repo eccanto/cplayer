@@ -5,7 +5,7 @@ from typing import Callable, Iterable
 from textual.binding import Binding
 from textual.widgets import DirectoryTree
 
-from src.components.hidden_widget import HiddenWidget
+from cplayer.src.components.hidden_widget import HiddenWidget
 
 
 class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-many-ancestors

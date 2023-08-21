@@ -1,6 +1,7 @@
 """Setup CPlayer package."""
 
 from pathlib import Path
+
 from setuptools import find_packages, setup
 
 
@@ -18,6 +19,7 @@ setup(
     long_description=Path('README.md').read_text(encoding='UTF-8'),
     long_description_content_type='text/markdown',
     install_requires=Path('requirements.txt').read_text(encoding='UTF-8').splitlines(),
+    package_data={'cplayer': ['**/*.css']},
     classifiers=[
         'Environment :: Console',
         'Operating System :: Unix',

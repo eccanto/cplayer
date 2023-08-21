@@ -41,3 +41,18 @@ Horizontal {
   width: 100%;
   align: center middle;
 }
+
+.hidden {
+    width: 0;
+    height: 0;
+}
+
+.displayed {
+    width: auto;
+    height: auto;
+}
+
+PageBase {
+  min-height: 100%;
+  min-width: 100%;
+}
