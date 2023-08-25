@@ -32,6 +32,8 @@ from cplayer.src.pages.home import HomePage
 __LOGGING_FORMAT = '[%(asctime)s] [%(process)d] %(filename)s:%(lineno)d - %(levelname)s - %(message)s'
 __DEFAULT_CONFIG = Path(__file__).parent.joinpath('resources/config/default.yaml')
 
+CONFIG = Config(default_data=__DEFAULT_CONFIG)
+
 
 class Application(App):
     """Class that represent the main application and inherits from the textual App class."""
@@ -65,7 +67,8 @@ class Application(App):
         yield HomePage(self.path, change_title=self.set_title, start_hidden=False)
         yield HelpPage(change_title=self.set_title)
 
-        yield Footer()
+        if CONFIG.data.appearance.style.footer:
+            yield Footer()
 
     def set_title(self, title: str) -> None:
         """Sets the title of the application window.
@@ -103,11 +106,9 @@ def main(path: Optional[Path]) -> None:
 
 
 if __name__ == '__main__':
-    config = Config(default_data=__DEFAULT_CONFIG)
-
     logging.basicConfig(
-        filename=Path(config.data.development.logfile).expanduser(),
-        level=logging.getLevelName(config.data.development.level),
+        filename=Path(CONFIG.data.development.logfile).expanduser(),
+        level=logging.getLevelName(CONFIG.data.development.level),
         format=__LOGGING_FORMAT,
     )
 

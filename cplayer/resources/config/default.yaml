@@ -5,7 +5,8 @@ general:
         order: ascending
 
 appearance:
-    style: null
+    style:
+      footer: true
 
 development:
     logfile: ~/.pyplayer/logfile.log

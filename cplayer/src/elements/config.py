@@ -31,10 +31,17 @@ class GeneralType:
 
 
 @dataclass
+class StyleType:
+    """Style option fields."""
+
+    footer: bool
+
+
+@dataclass
 class AppearanceType:
     """Appearance option fields."""
 
-    style: Optional[str]
+    style: StyleType
 
 
 @dataclass
