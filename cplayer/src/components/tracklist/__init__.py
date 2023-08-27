@@ -96,8 +96,6 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         Binding('enter', 'select_cursor', 'Reproduce', show=False),
     ]
 
-    _FIXED_SIZE = 11
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         on_select: Callable[[Song], None],
@@ -105,6 +103,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         on_cursor_right: Callable[[], None],
         on_change_position: Callable[[int, int], None],
         order: PlaylistOrder = PlaylistOrder.ASCENDING,
+        fixed_size: int = 0,
         **kwargs,
     ) -> None:
         """Initializes the Widget object.
@@ -117,6 +116,8 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         """
         super().__init__(**kwargs)
 
+        self._fixed_size = fixed_size
+
         self.on_select = on_select
         self.on_cursor_left = on_cursor_left
         self.on_cursor_right = on_cursor_right
@@ -127,7 +128,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.current_song: Optional[Song] = None
 
         self.console = Console()
-        self.length = self.console.size.height - self._FIXED_SIZE
+        self.length = self.console.size.height - self._fixed_size
 
         self.items: List[Song] = []
         self.items_unfilter: List[Song] = []
@@ -155,7 +156,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        new_length = self.console.size.height - self._FIXED_SIZE
+        new_length = self.console.size.height - self._fixed_size
         if new_length > self.length:
             delta = self.length - new_length
 

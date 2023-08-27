@@ -57,6 +57,9 @@ class Application(App):
 
         self.path = path
 
+        self.home_page = HomePage(self.path, change_title=self.set_title, start_hidden=False)
+        self.help_page = HelpPage(change_title=self.set_title)
+
     def compose(self) -> ComposeResult:
         """Composes the application layout.
 
@@ -64,8 +67,8 @@ class Application(App):
         """
         yield Header()
 
-        yield HomePage(self.path, change_title=self.set_title, start_hidden=False)
-        yield HelpPage(change_title=self.set_title)
+        yield self.home_page
+        yield self.help_page
 
         if CONFIG.data.appearance.style.footer:
             yield Footer()
@@ -99,7 +102,6 @@ class Application(App):
 def main(path: Optional[Path]) -> None:
     """Command line music player."""
     mixer.init()
-    mixer.music.set_volume(1)
 
     app = Application(path)
     app.run()

@@ -77,6 +77,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
                 (order for order in PlaylistOrder if order.value == self.config.data.general.playlist.order),
                 PlaylistOrder.ASCENDING,
             ),
+            fixed_size=11 if self.config.data.appearance.style.footer else 8
         )
         self.file_explorer_widget = FileExplorerWidget(Path('~').expanduser(), on_select=self.on_select_path)
 
