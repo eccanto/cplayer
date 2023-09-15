@@ -55,9 +55,7 @@ class Application(App):
         """
         super().__init__(*args, **kwargs)
 
-        self.path = path
-
-        self.home_page = HomePage(self.path, change_title=self.set_title, start_hidden=False)
+        self.home_page = HomePage(path if path else Path('.'), change_title=self.set_title, start_hidden=False)
         self.help_page = HelpPage(change_title=self.set_title)
 
     def compose(self) -> ComposeResult:

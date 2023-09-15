@@ -1,6 +1,6 @@
 general:
     playlist:
-        directory: ~/.pyplayer/playlists/
+        directory: ~/.cplayer/playlists/
         selected: null
         order: ascending
 
@@ -9,5 +9,5 @@ appearance:
       footer: true
 
 development:
-    logfile: ~/.pyplayer/logfile.log
+    logfile: ~/.cplayer/logfile.log
     level: INFO

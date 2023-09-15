@@ -75,7 +75,7 @@ class Config(Singleton):  # pylint: disable=too-few-public-methods
     >>> config.save()
     """
 
-    DEFAULT_PATH = Path('~/.pyplayer/config.yaml').expanduser()
+    DEFAULT_PATH = Path('~/.cplayer/config.yaml').expanduser()
 
     data: DataType
 
@@ -95,10 +95,8 @@ class Config(Singleton):  # pylint: disable=too-few-public-methods
             with open(default_data, encoding='UTF-8') as yaml_file:
                 self.data = DotMap(yaml.safe_load(yaml_file), _dynamic=False)
 
-            self.save()
-
-        if not self._path.parent.exists():
             self._path.parent.mkdir(parents=True, exist_ok=True)
+            self.save()
 
     def save(self):
         """Save the configuration data to the YAML file."""

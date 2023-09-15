@@ -49,7 +49,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         Binding(':', 'go_to_position', 'Go to position', show=False),
     ]
 
-    def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
+    def __init__(self, path: Path, *args, **kwargs) -> None:
         """Initializes the Page object.
 
         :param path: The initial songs path to be loaded.
