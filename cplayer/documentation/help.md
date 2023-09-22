@@ -37,4 +37,4 @@ Available keymaps.
 
 ### Configuration
 
-The GUI can be configured using the configuration file [~/.config/cplayer/config.yaml](cplayer/resources/config/default.yaml). ``
+The GUI can be configured using the configuration file [~/.config/cplayer/config.yaml](../resources/config/default.yaml). ``
