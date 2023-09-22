@@ -40,7 +40,7 @@ Only tested in Linux.
 ## Features
 
 * GUI customization.
-    * If your system does not support the icons used you can set them manually in [~/.config/cplayer/config.yaml](cplayer/resources/config/default.yaml)..
+    * If your system does not support the icons used you can set them manually in [~/.config/cplayer/config.yaml](cplayer/resources/config/default.yaml).
 * Keyboard shortcuts customization.
 * Create multiple playlists and manage then.
 * Multiple ways to navigate through the playlist including jumping by position, filtering, manual displacements,
