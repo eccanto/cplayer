@@ -37,18 +37,4 @@ Available keymaps.
 
 ### Configuration
 
-The GUI can be configured using the configuration file `~/.config/cplayer/config.yaml`
-
-```json
-{
-    "icons": {
-        "playlist": "",
-        "song": "♪",
-        "volume": "",
-        "reproduce": "❱",
-        "filter": "",
-        "directory": "",
-        "add_songs": ""
-    }
-}
-```
+The GUI can be configured using the configuration file [~/.config/cplayer/config.yaml](cplayer/resources/config/default.yaml). ``
