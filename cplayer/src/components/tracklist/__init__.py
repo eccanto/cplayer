@@ -14,6 +14,8 @@ from textual.containers import VerticalScroll
 from textual.widgets import Label
 from typing_extensions import Self
 
+from cplayer.src.elements import CONFIG
+
 
 class Song:
     """Song item."""
@@ -89,11 +91,11 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     BINDINGS = [
-        Binding('up', 'cursor_up', 'Cursor Up', show=False),
-        Binding('down', 'cursor_down', 'Cursor Down', show=False),
-        Binding('left', 'cursor_left', '-5 secs', show=False),
-        Binding('right', 'cursor_right', '+5 secs', show=False),
-        Binding('enter', 'select_cursor', 'Reproduce', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.up, 'cursor_up', 'Cursor Up', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.down, 'cursor_down', 'Cursor Down', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.rewind, 'cursor_left', '-5 secs', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.forward, 'cursor_right', '+5 secs', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.select, 'select_cursor', 'Reproduce', show=False),
     ]
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -138,6 +140,8 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.filter_pattern: Optional[str] = None
 
         self.content = Label('No data.')
+
+        self._colors = CONFIG.data.appearance.style.colors
 
     def on_mount(self) -> None:
         """Handle the on-mount event for the tracklist widget."""
@@ -219,8 +223,9 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         for index, song in enumerate(items[self.index : self.index + self.length]):
             is_current_song = self.current_song is not None and song.path == self.current_song.path
             rows.append(
-                f'[#CECECE]{"[#00FF00]" if is_current_song else ""} '
-                f'[{"#FF8000" if (index == 0) else "#CECECE"}]{song.path.name}'
+                f'[{self._colors.text}]'
+                f'{f"[{self._colors.playing_label}]" if is_current_song else CONFIG.data.appearance.style.icons.song} '
+                f'[{self._colors.primary if (index == 0) else self._colors.text}]{song.path.name}'
             )
 
         self.content.update('\n'.join(rows))

@@ -7,6 +7,8 @@ from textual.containers import Horizontal
 from textual.widget import Widget
 from textual.widgets import Label
 
+from cplayer.src.elements import CONFIG
+
 
 class ProgressStatusWidget(Widget):
     """Progress and status widget."""
@@ -17,9 +19,18 @@ class ProgressStatusWidget(Widget):
         The `Status` enum represents the possible playback statuses of a song or an ongoing process.
         """
 
-        UNSELECTED = '[#FF8000]❱ unselected'.ljust(22)
-        PLAYING = '[#00CC00]❱ playing'.ljust(22)
-        PAUSED = '[#0080FF]❱ paused'.ljust(22)
+        UNSELECTED = (
+            f'[{CONFIG.data.appearance.style.colors.primary}]{CONFIG.data.appearance.style.icons.reproduce} '
+            'unselected'
+        ).ljust(22)
+        PLAYING = (
+            f'[{CONFIG.data.appearance.style.colors.playing_label}]{CONFIG.data.appearance.style.icons.reproduce} '
+            'playing'
+        ).ljust(22)
+        PAUSED = (
+            f'[{CONFIG.data.appearance.style.colors.paused_label}]{CONFIG.data.appearance.style.icons.reproduce} '
+            'paused'
+        ).ljust(22)
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 

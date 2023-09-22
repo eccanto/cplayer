@@ -24,10 +24,94 @@ class PlaylistType:
 
 
 @dataclass
+class PagesShortcutsType:
+    """Pages shortcuts option fields."""
+
+    quit: str
+    information: str
+    home: str
+
+
+@dataclass
+class SongsShortcutsType:
+    """Songs shortcuts option fields."""
+
+    play_pause: str
+    decrease_volume: str
+    increase_volume: str
+    restart: str
+    mute: str
+
+
+@dataclass
+class PlaylistShortcutsType:
+    """Playlist shortcuts option fields."""
+
+    load: str
+    file_explorer: str
+    load_directory: str
+    previous_song: str
+    next_song: str
+    search_songs: str
+    filter_songs: str
+    save: str
+    delete_song: str
+    add_songs: str
+    up_song: str
+    down_song: str
+    change_order: str
+    go_to_position: str
+    up: str
+    down: str
+    rewind: str
+    forward: str
+    select: str
+
+
+@dataclass
+class ShortcutsType:
+    """Shortcuts option fields."""
+
+    pages: PagesShortcutsType
+    songs: SongsShortcutsType
+    playlist: PlaylistShortcutsType
+
+
+@dataclass
 class GeneralType:
     """General option fields."""
 
     playlist: PlaylistType
+    shortcuts: ShortcutsType
+
+
+@dataclass
+class IconsStyleType:
+    """Icons style option fields."""
+
+    playlist: str
+    song: str
+    volume: str
+    mute: str
+    reproduce: str
+    filter: str
+    search: str
+    directory: str
+    add_songs: str
+    save: str
+    go_to_position: str
+    order: str
+
+
+@dataclass
+class ColorsStyleType:
+    """Colors style option fields."""
+
+    primary: str
+    background: str
+    text: str
+    playing_label: str
+    paused_label: str
 
 
 @dataclass
@@ -35,6 +119,8 @@ class StyleType:
     """Style option fields."""
 
     footer: bool
+    colors: ColorsStyleType
+    icons: IconsStyleType
 
 
 @dataclass

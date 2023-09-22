@@ -17,7 +17,7 @@ from cplayer.src.components.options_list import Option, OptionsListWidget
 from cplayer.src.components.progress_bar import ProgressStatusWidget
 from cplayer.src.components.status_song import StatusSong
 from cplayer.src.components.tracklist import PlaylistOrder, Song, TracklistWidget
-from cplayer.src.elements.config import Config
+from cplayer.src.elements import CONFIG
 from cplayer.src.elements.playlist import PlayList
 from cplayer.src.pages.base import PageBase
 
@@ -28,25 +28,25 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     BINDINGS = [
-        Binding('space', 'play_pause', 'Play/Pause', show=False),
-        Binding('-', 'decrease_volume', 'Decrease Volume', show=True),
-        Binding('+', 'increase_volume', 'Increase Volume', show=True),
-        Binding('l', 'load_playlist', 'Load Playlist', show=False),
-        Binding('d', 'load_path', 'File Explorer', show=False),
-        Binding('ctrl+d', 'load_directory_path', 'Load Directory Path', show=False),
-        Binding('p', 'previous_song', 'Previous', show=True),
-        Binding('n', 'next_song', 'Next', show=True),
-        Binding('r', 'reset', 'Restart', show=True),
-        Binding('s', 'search', 'Search', show=False),
-        Binding('f', 'filter', 'Filter', show=False),
-        Binding('S', 'save_playlist', 'Save Playlist', show=False),
-        Binding('ctrl+delete', 'delete_song', 'Delete Song', show=False),
-        Binding('A', 'add_songs', 'Add songs', show=False),
-        Binding('ctrl+up', 'up_song_position', 'Up Song', show=False),
-        Binding('ctrl+down', 'down_song_position', 'Down Song', show=False),
-        Binding('o', 'change_order', 'Change playlist order', show=False),
-        Binding('m', 'mute_song', 'Mute', show=True),
-        Binding(':', 'go_to_position', 'Go to position', show=False),
+        Binding(CONFIG.data.general.shortcuts.songs.play_pause, 'play_pause', 'Play/Pause', show=False),
+        Binding(CONFIG.data.general.shortcuts.songs.decrease_volume, 'decrease_volume', 'Decrease Volume', show=True),
+        Binding(CONFIG.data.general.shortcuts.songs.increase_volume, 'increase_volume', 'Increase Volume', show=True),
+        Binding(CONFIG.data.general.shortcuts.songs.restart, 'reset', 'Restart', show=True),
+        Binding(CONFIG.data.general.shortcuts.songs.mute, 'mute_song', 'Mute', show=True),
+        Binding(CONFIG.data.general.shortcuts.playlist.load, 'load_playlist', 'Load Playlist', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.file_explorer, 'load_path', 'File Explorer', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.load_directory, 'load_directory', 'Load Directory', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.previous_song, 'previous_song', 'Previous', show=True),
+        Binding(CONFIG.data.general.shortcuts.playlist.next_song, 'next_song', 'Next', show=True),
+        Binding(CONFIG.data.general.shortcuts.playlist.search_songs, 'search', 'Search', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.filter_songs, 'filter', 'Filter', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.save, 'save_playlist', 'Save Playlist', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.delete_song, 'delete_song', 'Delete Song', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.add_songs, 'add_songs', 'Add songs', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.up_song, 'up_song_position', 'Up Song', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.down_song, 'down_song_position', 'Down Song', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.change_order, 'change_order', 'Playlist order', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.go_to_position, 'go_to_position', 'Go to position', show=False),
     ]
 
     def __init__(self, path: Path, *args, **kwargs) -> None:
@@ -58,9 +58,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         """
         super().__init__(*args, **kwargs)
 
-        self.config = Config()
-
-        self.playlists_directory = Path(self.config.data.general.playlist.directory).expanduser()
+        self.playlists_directory = Path(CONFIG.data.general.playlist.directory).expanduser()
         self.playlists_directory.mkdir(parents=True, exist_ok=True)
 
         self._start_position = 0
@@ -74,10 +72,10 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             self.action_cursor_right,
             on_change_position=self.on_change_position,
             order=next(
-                (order for order in PlaylistOrder if order.value == self.config.data.general.playlist.order),
+                (order for order in PlaylistOrder if order.value == CONFIG.data.general.playlist.order),
                 PlaylistOrder.ASCENDING,
             ),
-            fixed_size=11 if self.config.data.appearance.style.footer else 8,
+            fixed_size=11 if CONFIG.data.appearance.style.footer else 8,
         )
         self.file_explorer_widget = FileExplorerWidget(Path('~').expanduser(), on_select=self.on_select_path)
 
@@ -87,16 +85,34 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.select_order_widget = OptionsListWidget('Select an order:', self.on_quit, self.select_order)
 
         self.goto_position_widget = InputLabelWidget(
-            ' go to position', on_enter=self.on_go_to_position, on_quit=self.on_quit
+            f'{CONFIG.data.appearance.style.icons.go_to_position} go to position',
+            on_enter=self.on_go_to_position,
+            on_quit=self.on_quit,
         )
-        self.filter_widget = InputLabelWidget(' filter text', on_enter=self.filter_songs, on_quit=self.on_quit)
-        self.search_widget = InputLabelWidget(' search text', on_enter=self.search_songs, on_quit=self.on_quit)
-        self.directory_widget = InputLabelWidget(' directory path', on_enter=self.load_directory, on_quit=self.on_quit)
+        self.filter_widget = InputLabelWidget(
+            f'{CONFIG.data.appearance.style.icons.filter} filter text',
+            on_enter=self.filter_songs,
+            on_quit=self.on_quit,
+        )
+        self.search_widget = InputLabelWidget(
+            f'{CONFIG.data.appearance.style.icons.search} search text',
+            on_enter=self.search_songs,
+            on_quit=self.on_quit,
+        )
+        self.directory_widget = InputLabelWidget(
+            f'{CONFIG.data.appearance.style.icons.directory} directory path',
+            on_enter=self.load_directory,
+            on_quit=self.on_quit,
+        )
         self.playlist_name_widget = InputLabelWidget(
-            '󰆓 playlist name', on_enter=self.enter_playlist_name, on_quit=self.on_quit
+            f'{CONFIG.data.appearance.style.icons.save} playlist name',
+            on_enter=self.enter_playlist_name,
+            on_quit=self.on_quit,
         )
         self.add_songs_widget = InputLabelWidget(
-            ' add songs (mp3/directory)', on_enter=self.add_songs, on_quit=self.on_quit
+            f'{CONFIG.data.appearance.style.icons.add_songs} add songs (mp3/directory)',
+            on_enter=self.add_songs,
+            on_quit=self.on_quit,
         )
 
         self.selected_directory = path
@@ -256,7 +272,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         """Plays the next song in the tracklist."""
         self.tracklist_widget.next_song()
 
-    def action_load_directory_path(self) -> None:
+    def action_load_directory(self) -> None:
         """Opens the input widget to load a directory path."""
         self.status_song_widget.hide()
 
@@ -321,7 +337,10 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.tracklist_widget.display = False
 
         self.select_playlist_widget.list_view.update(
-            [Option(path, '  ', lambda path: path.stem) for path in self.playlists_directory.glob('*.playlist')]
+            [
+                Option(path, f'{CONFIG.data.appearance.style.icons.playlist} ', lambda path: path.stem)
+                for path in self.playlists_directory.glob('*.playlist')
+            ]
         )
         self.select_playlist_widget.show()
 
@@ -335,8 +354,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.tracklist_widget.order = next(
             (order for order in PlaylistOrder if order.value == option), PlaylistOrder.ASCENDING
         )
-        self.config.data.general.playlist.order = self.tracklist_widget.order.value
-        self.config.save()
+        CONFIG.data.general.playlist.order = self.tracklist_widget.order.value
+        CONFIG.save()
 
         self.tracklist_widget.set_songs([song.path for song in self.tracklist_widget.items], sort=True)
         self.tracklist_widget.display = True
@@ -350,7 +369,10 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.tracklist_widget.display = False
 
         self.select_order_widget.list_view.update(
-            [Option(order.value, '  ', lambda order: order) for order in PlaylistOrder]
+            [
+                Option(order.value, f'{CONFIG.data.appearance.style.icons.order} ', lambda order: order)
+                for order in PlaylistOrder
+            ]
         )
         self.select_order_widget.show()
 
@@ -369,7 +391,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
             songs = [Path(path) for path in self.selected_playlist.songs]
 
-            self.change_title(f' {self.selected_playlist.name} Playlist')
+            self.change_title(f'{CONFIG.data.appearance.style.icons.playlist} {self.selected_playlist.name} Playlist')
 
             logging.info('loading playlist "%s" with %s items...', self.selected_playlist.name, len(songs))
 
@@ -380,8 +402,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             if self.selected_playlist.selected:
                 self.tracklist_widget.select(Path(self.selected_playlist.selected))
 
-            self.config.data.general.playlist.selected = str(self.selected_playlist.path)
-            self.config.save()
+            CONFIG.data.general.playlist.selected = str(self.selected_playlist.path)
+            CONFIG.save()
 
             self.refresh()
         elif self.selected_playlist:
@@ -402,8 +424,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.selected_playlist.songs = [song.path for song in self.tracklist_widget.items]
         self.selected_playlist.save()
 
-        self.config.data.general.playlist.selected = str(self.selected_playlist.path)
-        self.config.save()
+        CONFIG.data.general.playlist.selected = str(self.selected_playlist.path)
+        CONFIG.save()
 
         self.playlist_name_widget.hide()
         self.tracklist_widget.focus()
@@ -490,8 +512,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
         if self.selected_directory is not None:
             self._load_directory(self.selected_directory)
-        elif self.config.data.general.playlist.selected:
-            self.selected_playlist = PlayList(Path(self.config.data.general.playlist.selected))
+        elif CONFIG.data.general.playlist.selected:
+            self.selected_playlist = PlayList(Path(CONFIG.data.general.playlist.selected))
             self.load_playlist()
 
         mixer.music.set_volume(self._volume)

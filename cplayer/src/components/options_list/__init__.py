@@ -7,6 +7,7 @@ from textual.containers import Middle, VerticalScroll
 from textual.widgets import Label
 
 from cplayer.src.components.hidden_widget import HiddenWidget
+from cplayer.src.elements import CONFIG
 
 
 class CustomListView(VerticalScroll):
@@ -39,6 +40,8 @@ class CustomListView(VerticalScroll):
         self.options: List[Option] = []
         self.index = 0
 
+        self._colors = CONFIG.data.appearance.style.colors
+
         self.content = Label('No data.')
 
     def compose(self) -> ComposeResult:
@@ -53,7 +56,8 @@ class CustomListView(VerticalScroll):
         rows = []
         for index, option in enumerate(self.options):
             rows.append(
-                f'[{"#FF8000" if (index == self.index) else "#CECECE"}]{option.prefix}{option.to_string(option.data)}'
+                f'[{self._colors.primary if (index == self.index) else self._colors.text}]'
+                f'{option.prefix}{option.to_string(option.data)}'
             )
         self.content.update('\n'.join(rows))
 

@@ -5,6 +5,8 @@ from textual.containers import Horizontal
 from textual.widget import Widget
 from textual.widgets import Label, ProgressBar
 
+from cplayer.src.elements import CONFIG
+
 
 class VolumeBarWidget(Widget):
     """Volume bar widget."""
@@ -20,7 +22,7 @@ class VolumeBarWidget(Widget):
 
         self.default_volume = default_volume
 
-        self._label = Label('')
+        self._label = Label(CONFIG.data.appearance.style.icons.volume)
         self._progress_bar = ProgressBar(show_eta=False, show_percentage=False, total=1)
 
         self._muted = False
@@ -33,7 +35,9 @@ class VolumeBarWidget(Widget):
     @muted.setter
     def muted(self, is_muted) -> None:
         self._muted = is_muted
-        self._label.update('' if is_muted else '')
+        self._label.update(
+            CONFIG.data.appearance.style.icons.mute if is_muted else CONFIG.data.appearance.style.icons.volume
+        )
 
     def compose(self) -> ComposeResult:
         """Composes the layout for the Widget.

@@ -24,26 +24,27 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header
 
-from cplayer.src.elements.config import Config
+from cplayer.src.elements import CONFIG
 from cplayer.src.pages.help import HelpPage
 from cplayer.src.pages.home import HomePage
 
 
 __LOGGING_FORMAT = '[%(asctime)s] [%(process)d] %(filename)s:%(lineno)d - %(levelname)s - %(message)s'
-__DEFAULT_CONFIG = Path(__file__).parent.joinpath('resources/config/default.yaml')
-
-CONFIG = Config(default_data=__DEFAULT_CONFIG)
 
 
 class Application(App):
     """Class that represent the main application and inherits from the textual App class."""
 
-    TITLE = ' Playlist'
+    TITLE = f'{CONFIG.data.appearance.style.icons.playlist} Playlist'
+    CSS = (
+        f'$primary: {CONFIG.data.appearance.style.colors.primary}; '
+        f'$background: {CONFIG.data.appearance.style.colors.background};'
+    )
     CSS_PATH = Path(__file__).parent.joinpath('resources/styles/application.css')
     BINDINGS = [
-        Binding('q', 'quit', 'Quit', show=True),
-        Binding('h', 'home', 'Home', show=True),
-        Binding('i', 'info', 'Info', show=True),
+        Binding(CONFIG.data.general.shortcuts.pages.quit, 'quit', 'Quit', show=True),
+        Binding(CONFIG.data.general.shortcuts.pages.home, 'home', 'Home', show=True),
+        Binding(CONFIG.data.general.shortcuts.pages.information, 'info', 'Info', show=True),
     ]
 
     def __init__(self, path: Optional[Path], *args, **kwargs) -> None:

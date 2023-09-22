@@ -3,10 +3,60 @@ general:
         directory: ~/.cplayer/playlists/
         selected: null
         order: ascending
+    shortcuts:
+        pages:
+            quit: "q"
+            information: "i"
+            home: "h"
+        songs:
+            play_pause: "space"
+            decrease_volume: "-"
+            increase_volume: "+"
+            restart: "r"
+            mute: "m"
+        playlist:
+            load: "l"
+            file_explorer: "e"
+            load_directory: "d"
+            previous_song: "p"
+            next_song: "n"
+            search_songs: "s"
+            filter_songs: "f"
+            save: "ctrl+s"
+            delete_song: "ctrl+delete"
+            add_songs: "A"
+            up_song: "ctrl+up"
+            down_song: "ctrl+down"
+            change_order: "o"
+            go_to_position: ":"
+            up: "up"
+            down: "down"
+            rewind: "left"
+            forward: "right"
+            select: "enter"
 
 appearance:
     style:
-      footer: true
+        footer: false
+        colors:
+            primary: "#FF8000"
+            background: "#000000"
+            text: "#CECECE"
+            playing_label: "#00CC00"
+            paused_label: "#0080FF"
+        icons:
+            playlist: 
+            song: 
+            volume: 
+            mute: 
+            reproduce: ❱
+            filter: 
+            search: 
+            directory: 
+            add_songs: 
+            save: 󰆓
+            go_to_position: 󰆓
+            order: 
 
 development:
     logfile: ~/.cplayer/logfile.log

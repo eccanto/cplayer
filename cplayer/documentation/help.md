@@ -1,14 +1,11 @@
-# Simple Song Player
+# CPlayer
 
-Basic song player written with Python ([github](https://github.com/eccanto/simple-song-player)).
+## Table of contents
 
-## Features
+* [Keymaps](#keymaps)
+* [Configuration](#configuration)
 
-- Customized GUI.
-- Create multiple playlists and manage then.
-- Custom playlist sort.
-
-## Keymaps
+### Keymaps
 
 Available keymaps.
 
@@ -21,14 +18,14 @@ Available keymaps.
 | -               | `playlist` | Decrease Volume                    |
 | +               | `playlist` | Increase Volume                    |
 | l               | `playlist` | Load Playlist                      |
-| d               | `playlist` | File Explorer                      |
-| ctrl+d          | `playlist` | Load Directory Path                |
+| e               | `playlist` | File Explorer                      |
+| d               | `playlist` | Load Directory Path                |
 | p               | `playlist` | Previous                           |
 | n               | `playlist` | Next                               |
 | r               | `playlist` | Restart                            |
 | s               | `playlist` | Search                             |
 | f               | `playlist` | Filter                             |
-| S               | `playlist` | Save Playlist                      |
+| ctrl+s          | `playlist` | Save Playlist                      |
 | ctrl+delete     | `playlist` | Delete Song                        |
 | A               | `playlist` | Add songs                          |
 | ctrl+up         | `playlist` | Up Song                            |
@@ -38,9 +35,9 @@ Available keymaps.
 | :               | `playlist` | Go to position                     |
 
 
-## Configuration
+### Configuration
 
-The GUI can be configured using the configuration file `~/.config/simple-player/config.json`
+The GUI can be configured using the configuration file `~/.config/cplayer/config.yaml`
 
 ```json
 {
@@ -55,10 +52,3 @@ The GUI can be configured using the configuration file `~/.config/simple-player/
     }
 }
 ```
-
-## TODO
-
-- Add confirmation dialog to remove/add songs.
-- Add file explorer to add songs from a directory.
-- Extend the configuration file to enable more customizations.
-- Add "recent" sections: recent folders, recent playlist, rencet songs.
