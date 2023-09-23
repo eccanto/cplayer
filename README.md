@@ -9,7 +9,7 @@
 ![CPlayer](documentation/images/screenshot.png)
 
 **C**ommand Line **P**ython p**layer** is a minimalist song player written with Python
-([github](https://github.com/eccanto/simple-song-player)), this application offers a wide range of functionality to
+([github](https://github.com/eccanto/cplayer)), this application offers a wide range of functionality to
 enhance your music listening, playlist management, filtering and searching songs and more using keyboard shortcuts.
 
 Below, you'll find a comprehensive list of keyboard shortcuts and their corresponding actions within the application,

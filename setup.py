@@ -14,7 +14,7 @@ setup(
     description='Song player command line application',
     author='Erik Ccanto',
     author_email='ccanto.erik@gmail.com',
-    url='https://github.com/eccanto/simple-song-player',
+    url='https://github.com/eccanto/cplayer',
     license='MIT',
     long_description=Path('README.md').read_text(encoding='UTF-8'),
     long_description_content_type='text/markdown',
