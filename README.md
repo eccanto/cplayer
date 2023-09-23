@@ -1,12 +1,11 @@
 # CPlayer
 
-![](https://img.shields.io/github/license/son-link/cplayer)
-![](https://img.shields.io/github/downloads/son-link/cplayer/total)
-![](https://img.shields.io/github/stars/son-link/cplayer)
+![](https://img.shields.io/badge/-Linux-grey?logo=linux)
 ![](https://img.shields.io/pypi/v/cplayer)
-![](https://img.shields.io/pypi/dm/cplayer?label=downloas%20on%20PyPi)
+![](https://img.shields.io/badge/license-MIT-green)
+![](https://img.shields.io/github/stars/eccanto)
 
-![CPlayer](documentation/images/screenshot.png)
+![CPlayer](https://raw.githubusercontent.com/eccanto/cplayer/main/documentation/videos/cplayer.gif)
 
 **C**ommand Line **P**ython p**layer** is a minimalist song player written with Python
 ([github](https://github.com/eccanto/cplayer)), this application offers a wide range of functionality to
@@ -81,19 +80,37 @@ To run the application you must run the command line:
 cplayer
 ```
 
-By default the application will use the current path to load `.mp3` files in the directory (not recursively)
+By default the application will load the last playlist if it exists, otherwise the application will use the current
+path to load the `.mp3` files from the directory (not recursively).
 
 ### Options
 
-```bash
+```
 $ cplayer --help
 
 Usage: cplayer [OPTIONS]
 
-  Command line music player.
+  Command Line Python player CLI.
+
+  This command line tool plays music files from a specified directory or last
+  used playlist.
+
+  Examples:
+
+      - Play music from the current directory or the last used playlist if it
+      exists:
+
+        $ cplayer
+
+      - Play music from a specific directory:
+
+        $ cplayer -p /path/to/music_directory
+
+  For more information, visit https://github.com/eccanto/cplayer
 
 Options:
-  -p, --path PATH  Songs directory path.
+  -p, --path PATH  Path to the directory containing your music files.
+  --version        Show the version and exit.
   --help           Show this message and exit.
 ```
 
@@ -233,3 +250,7 @@ tox -e check_code
 ## Changelog
 
 * 1.0.0 - Initial version.
+* 1.0.1:
+    * `refactor`: Update documentation.
+    * `fix`: Default playlist loading.
+    * `feat`: Add `--version` command line argument.

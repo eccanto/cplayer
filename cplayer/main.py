@@ -24,6 +24,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header
 
+from cplayer import __version__
 from cplayer.src.elements import CONFIG
 from cplayer.src.pages.help import HelpPage
 from cplayer.src.pages.home import HomePage
@@ -56,7 +57,7 @@ class Application(App):
         """
         super().__init__(*args, **kwargs)
 
-        self.home_page = HomePage(path if path else Path('.'), change_title=self.set_title, start_hidden=False)
+        self.home_page = HomePage(path, change_title=self.set_title, start_hidden=False)
         self.help_page = HelpPage(change_title=self.set_title)
 
     def compose(self) -> ComposeResult:
@@ -97,9 +98,30 @@ class Application(App):
 
 
 @click.command()
-@click.option('-p', '--path', help='Songs directory path.', type=click.Path(exists=True, path_type=Path))
+@click.option(
+    '-p',
+    '--path',
+    help='Path to the directory containing your music files.',
+    type=click.Path(exists=True, path_type=Path),
+)
+@click.version_option(version=__version__)
 def main(path: Optional[Path]) -> None:
-    """Command line music player."""
+    """Command Line Python player CLI.
+
+    This command line tool plays music files from a specified directory or last used playlist.
+
+    Examples:
+
+        - Play music from the current directory or the last used playlist if it exists:
+
+          $ cplayer
+
+        - Play music from a specific directory:
+
+          $ cplayer -p /path/to/music_directory
+
+    For more information, visit https://github.com/eccanto/cplayer
+    """
     mixer.init()
 
     app = Application(path)

@@ -49,7 +49,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         Binding(CONFIG.data.general.shortcuts.playlist.go_to_position, 'go_to_position', 'Go to position', show=False),
     ]
 
-    def __init__(self, path: Path, *args, **kwargs) -> None:
+    def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
         """Initializes the Page object.
 
         :param path: The initial songs path to be loaded.
@@ -391,7 +391,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
             songs = [Path(path) for path in self.selected_playlist.songs]
 
-            self.change_title(f'{CONFIG.data.appearance.style.icons.playlist} {self.selected_playlist.name} Playlist')
+            self.change_title(f'{CONFIG.data.appearance.style.icons.playlist} {self.selected_playlist.name}')
 
             logging.info('loading playlist "%s" with %s items...', self.selected_playlist.name, len(songs))
 
@@ -515,6 +515,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         elif CONFIG.data.general.playlist.selected:
             self.selected_playlist = PlayList(Path(CONFIG.data.general.playlist.selected))
             self.load_playlist()
+        else:
+            self._load_directory(Path('.'))
 
         mixer.music.set_volume(self._volume)
 
