@@ -44,7 +44,7 @@ class SongsShortcutsType:
 
 
 @dataclass
-class PlaylistShortcutsType:
+class PlaylistShortcutsType:  # pylint: disable=too-many-instance-attributes
     """Playlist shortcuts option fields."""
 
     load: str
@@ -61,7 +61,7 @@ class PlaylistShortcutsType:
     down_song: str
     change_order: str
     go_to_position: str
-    up: str
+    up: str  # pylint: disable=invalid-name
     down: str
     rewind: str
     forward: str
@@ -86,7 +86,7 @@ class GeneralType:
 
 
 @dataclass
-class IconsStyleType:
+class IconsStyleType:  # pylint: disable=too-many-instance-attributes
     """Icons style option fields."""
 
     playlist: str
