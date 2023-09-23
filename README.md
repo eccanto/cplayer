@@ -22,6 +22,7 @@ Only tested in Linux.
 * [Features](#features)
 * [Get started](#get-started)
   * [Installation](#installation)
+  * [Uninstallation](#uninstallation)
   * [Usage](#usage)
   * [Options](#options)
 * [TODO](#todo)
@@ -62,6 +63,14 @@ if you want to install from a source distribution:
 git clone https://github.com/eccanto/cplayer
 cd cplayer/
 pip install .
+```
+
+### Uninstallation
+
+To uninstall the application you can use `pip`:
+
+```bash
+pip uninstall cplayer
 ```
 
 ### Usage
