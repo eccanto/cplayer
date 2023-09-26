@@ -12,7 +12,7 @@ import os
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-order, wrong-import-position
 
 import logging
 from pathlib import Path
@@ -26,6 +26,7 @@ from textual.widgets import Footer, Header
 
 from cplayer import __version__
 from cplayer.src.elements import CONFIG
+from cplayer.src.elements.downloader import YoutubeDownloader
 from cplayer.src.pages.help import HelpPage
 from cplayer.src.pages.home import HomePage
 
@@ -104,8 +105,14 @@ class Application(App):
     help='Path to the directory containing your music files.',
     type=click.Path(exists=True, path_type=Path),
 )
+@click.option(
+    '-u',
+    '--url',
+    help='URL of the song to download from YouTube.',
+)
 @click.version_option(version=__version__)
-def main(path: Optional[Path]) -> None:
+def main(path: Optional[Path], url: Optional[str]) -> None:
+    # noqa: D413, D407, D412, D406
     """Command Line Python player CLI.
 
     This command line tool plays music files from a specified directory or last used playlist.
@@ -118,14 +125,22 @@ def main(path: Optional[Path]) -> None:
 
         - Play music from a specific directory:
 
-          $ cplayer -p /path/to/music_directory
+          $ cplayer --path /path/to/music_directory
+
+        - Download song from YouTube
+
+          $ cplayer --url 'https://www.youtube.com/watch?v=xyz'
 
     For more information, visit https://github.com/eccanto/cplayer
     """
-    mixer.init()
+    if url:
+        downloader = YoutubeDownloader(url)
+        downloader.download()
+    else:
+        mixer.init()
 
-    app = Application(path)
-    app.run()
+        app = Application(path)
+        app.run()
 
 
 if __name__ == '__main__':

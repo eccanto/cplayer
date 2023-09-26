@@ -176,7 +176,6 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         """Opens a input text to filter songs in the current playlist."""
         self.status_song_widget.hide()
 
-        self.filter_widget.value = ''
         self.filter_widget.show()
 
     def action_search(self) -> None:

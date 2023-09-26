@@ -45,6 +45,7 @@ Only tested in Linux.
 * Create multiple playlists and manage then.
 * Multiple ways to navigate through the playlist including jumping by position, filtering, manual displacements,
   sorting, etc.
+* Download song from a YouTube URL (`--url`).
 
 ## Get started
 
@@ -104,19 +105,24 @@ Usage: cplayer [OPTIONS]
 
       - Play music from a specific directory:
 
-        $ cplayer -p /path/to/music_directory
+        $ cplayer --path /path/to/music_directory
+
+      - Download song from YouTube
+
+        $ cplayer --url 'https://www.youtube.com/watch?v=xyz'
 
   For more information, visit https://github.com/eccanto/cplayer
 
 Options:
   -p, --path PATH  Path to the directory containing your music files.
+  -u, --url TEXT   URL of the song to download from YouTube.
   --version        Show the version and exit.
   --help           Show this message and exit.
 ```
 
 ### TODO
 
-* Download songs from a Youtube URL.
+* Add favorites feature.
 * Add option to restore default configurations.
 * Add confirmation dialog to remove/add songs.
 * Add "recent" sections: recent folders, recent playlists, recent songs.
@@ -254,3 +260,5 @@ tox -e check_code
     * `refactor`: Update documentation.
     * `fix`: Default playlist loading.
     * `feat`: Add `--version` command line argument.
+* 1.0.2:
+    * `feat`: Download song from a YouTube URL (`--url`).
