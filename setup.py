@@ -40,7 +40,7 @@ setup(
     python_requires='>=3.7.15, <4',
     entry_points={
         'console_scripts': [
-            'cplayer = cplayer.main:main',
+            'cplayer = cplayer.__main__:main',
         ]
     },
     keywords=['music', 'songs player', 'command line'],

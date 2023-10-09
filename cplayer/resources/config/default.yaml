@@ -39,11 +39,11 @@ appearance:
     style:
         footer: false
         colors:
-            primary: "#FF8000"
+            primary: "#2180DE"
             background: "#000000"
             text: "#CECECE"
             playing_label: "#00CC00"
-            paused_label: "#0080FF"
+            paused_label: "#FF8000"
         icons:
             playlist: 
             song: 

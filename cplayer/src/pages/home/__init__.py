@@ -216,7 +216,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
             self.tracklist_widget.next_song()
 
-            self.refresh()
+            if self.parent:
+                self.parent.refresh()
 
     def action_reset(self) -> None:
         """Resets the currently selected song."""
@@ -515,7 +516,9 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             self.selected_playlist = PlayList(Path(CONFIG.data.general.playlist.selected))
             self.load_playlist()
         else:
-            self._load_directory(Path('.'))
+            path = Path('.')
+            self._load_directory(path)
+            self.change_title(f'{CONFIG.data.appearance.style.icons.directory} {path.absolute()}')
 
         mixer.music.set_volume(self._volume)
 

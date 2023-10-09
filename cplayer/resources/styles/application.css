@@ -50,3 +50,13 @@ PageBase {
   min-height: 100%;
   min-width: 100%;
 }
+
+Bar > .bar--indeterminate {
+    color: $primary;
+    background: $background;
+}
+
+Bar > .bar--bar {
+    color: $primary;
+    background: $primary 30%;
+}

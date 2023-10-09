@@ -8,7 +8,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from rich.console import Console
-from rich.progress import Progress
 from rich.prompt import Prompt
 from rich.text import Text
 from yt_dlp import YoutubeDL
@@ -35,7 +34,7 @@ class YoutubeDownloader:  # pylint: disable=too-few-public-methods
             options = {
                 'format': 'bestaudio/best',
                 'outtmpl': str(output_directory.joinpath('%(title)s.mp3')),
-                'quiet': True,
+                'quiet': False,
                 'postprocessors': [
                     {
                         'key': 'FFmpegExtractAudio',
@@ -47,10 +46,7 @@ class YoutubeDownloader:  # pylint: disable=too-few-public-methods
             with YoutubeDL(options) as downloader:
                 information = downloader.extract_info(self.url, download=False)
                 if information:
-                    with Progress(expand=True) as progress:
-                        task = progress.add_task(f'downloading "{self.url}"...', total=None)
-                        downloader.download([self.url])
-                        progress.advance(task)
+                    downloader.download([self.url])
 
                     name = Prompt.ask('song Name', default=information['fulltitle'])
                     path = Prompt.ask('destination Path', default=str(Path('.').absolute()))

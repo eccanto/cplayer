@@ -262,3 +262,6 @@ tox -e check_code
     * `feat`: Add `--version` command line argument.
 * 1.0.2:
     * `feat`: Download song from a YouTube URL (`--url`).
+* 1.1.0:
+    * `fix`: Update the application when a song is broken.
+    * `feat`: Add log details when downloading a song.
