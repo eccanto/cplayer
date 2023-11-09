@@ -5,7 +5,7 @@ general:
         order: ascending
     shortcuts:
         pages:
-            quit: "q"
+            quit: "ctrl+q"
             information: "i"
             home: "h"
         songs:
@@ -20,7 +20,7 @@ general:
             load_directory: "d"
             previous_song: "p"
             next_song: "n"
-            search_songs: "s"
+            search_songs: "/"
             filter_songs: "f"
             save: "ctrl+s"
             delete_song: "ctrl+delete"

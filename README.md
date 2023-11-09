@@ -265,3 +265,6 @@ tox -e check_code
 * 1.1.0:
     * `fix`: Update the application when a song is broken.
     * `feat`: Add log details when downloading a song.
+* 1.1.1:
+    * `fix`: Store absolute paths of the songs in the playlist file.
+    * `refactor`: Change keyboard shortcuts (`vim` style).

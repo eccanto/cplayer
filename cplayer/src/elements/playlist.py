@@ -33,7 +33,7 @@ class PlayList:
                     'name': self.name,
                     'path': str(self.path),
                     'selected': str(self.selected) if self.selected else None,
-                    'songs': [str(path) for path in self.songs],
+                    'songs': [str(path.absolute()) for path in self.songs],
                 },
                 json_file,
                 indent=2,
