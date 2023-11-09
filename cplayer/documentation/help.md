@@ -11,8 +11,8 @@ Available keymaps.
 
 | Keymap          | window     | Description                        |
 | --------------- | ---------- | ---------------------------------- |
-| q               | `all`      | Quit application                   |
-| i               | `all`      | go to Information Page             |
+| ctrl+q          | `all`      | Quit application                   |
+| ?               | `all`      | go to Information Page             |
 | h               | `all`      | go to Home Page                    |
 | space           | `playlist` | Play/Pause                         |
 | -               | `playlist` | Decrease Volume                    |
@@ -23,7 +23,7 @@ Available keymaps.
 | p               | `playlist` | Previous                           |
 | n               | `playlist` | Next                               |
 | r               | `playlist` | Restart                            |
-| s               | `playlist` | Search                             |
+| /               | `playlist` | Search                             |
 | f               | `playlist` | Filter                             |
 | ctrl+s          | `playlist` | Save Playlist                      |
 | ctrl+delete     | `playlist` | Delete Song                        |

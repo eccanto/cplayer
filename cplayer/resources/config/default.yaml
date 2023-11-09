@@ -6,7 +6,7 @@ general:
     shortcuts:
         pages:
             quit: "ctrl+q"
-            information: "i"
+            information: "?"
             home: "h"
         songs:
             play_pause: "space"
