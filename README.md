@@ -173,6 +173,12 @@ to clean the test environment:
 tox -e clean
 ```
 
+to publish the pypi package:
+
+```bash
+tox -e publish
+```
+
 #### Advanced configuration
 
 By default `tox` will look for the python versions available on the system, and will run the compatibility tests on
