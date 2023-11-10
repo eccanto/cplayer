@@ -26,6 +26,7 @@ Only tested in Linux.
   * [Options](#options)
 * [TODO](#todo)
 * [Known issues](#known-issues)
+* [Reports and Debugging](#reports-and-debugging)
 * [Developers](#developers)
   * [Set up the Git hooks custom directory](#set-up-the-git-hooks-custom-directory)
   * [Basic configuration](#basic-configuration)
@@ -130,6 +131,20 @@ Options:
 ### Known issues
 
 * `tmux` subpanels may cause the application dimensions to be incorrect.
+
+### Reports and Debugging
+
+The application uses a log file located at `~/.cplayer/logfile.log` to report and debug errors. The log file contains
+detailed information about all errors that occur while the application is running, including the time and date of the
+error, the error message, and the stack trace.
+
+To view the log file, you can use a text editor or a terminal emulator, e.g.:
+
+```bash
+tail -f ~/.cplayer/logfile.log
+```
+
+The log file can be used to report and debug errors.
 
 ### Developers
 
@@ -274,3 +289,7 @@ tox -e check_code
 * 1.1.1:
     * `fix`: Store absolute paths of the songs in the playlist file.
     * `refactor`: Change keyboard shortcuts (`vim` style).
+* 1.1.2:
+    * `fix`: Handle error when song files are not found.
+    * `documentation`: Add development documentation.
+    * `refactor`: Enable log file.

@@ -133,6 +133,12 @@ def main(path: Optional[Path], url: Optional[str]) -> None:
 
     For more information, visit https://github.com/eccanto/cplayer
     """
+    logging.basicConfig(
+        filename=Path(CONFIG.data.development.logfile).expanduser(),
+        level=logging.getLevelName(CONFIG.data.development.level),
+        format=__LOGGING_FORMAT,
+    )
+
     if url:
         downloader = YoutubeDownloader(url)
         downloader.download()
@@ -141,13 +147,3 @@ def main(path: Optional[Path], url: Optional[str]) -> None:
 
         app = Application(path)
         app.run()
-
-
-if __name__ == '__main__':
-    logging.basicConfig(
-        filename=Path(CONFIG.data.development.logfile).expanduser(),
-        level=logging.getLevelName(CONFIG.data.development.level),
-        format=__LOGGING_FORMAT,
-    )
-
-    main()  # pylint: disable=no-value-for-parameter

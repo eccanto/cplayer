@@ -258,7 +258,13 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             elif self.order == PlaylistOrder.RANDOM:
                 random.shuffle(paths)
 
-        self.items = [Song(path, on_play=self.on_select) for path in paths]
+        self.items = []
+        for path in paths:
+            if path.is_file():
+                self.items.append(Song(path, on_play=self.on_select))
+            else:
+                logging.warning('song not found: "%s"', path)
+
         self.items_unfilter = self.items.copy()
         self.items_length = len(paths)
         self.index = position
