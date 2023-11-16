@@ -295,3 +295,5 @@ tox -e check_code
     * `refactor`: Enable log file.
 * 1.1.3:
     * `refactor`: Update requirements compatibility.
+* 1.1.4:
+    * `refactor`: Update application compatibility.

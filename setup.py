@@ -31,13 +31,9 @@ setup(
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
         'Development Status :: 4 - Beta',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
     ],
-    python_requires='>=3.7.15, <4',
+    python_requires='>=3.11.5,<3.12.0',
     entry_points={
         'console_scripts': [
             'cplayer = cplayer.__main__:main',
