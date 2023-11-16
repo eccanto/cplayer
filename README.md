@@ -293,3 +293,5 @@ tox -e check_code
     * `fix`: Handle error when song files are not found.
     * `documentation`: Add development documentation.
     * `refactor`: Enable log file.
+* 1.1.3:
+    * `refactor`: Update requirements compatibility.
