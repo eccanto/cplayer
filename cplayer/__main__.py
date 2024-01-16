@@ -38,16 +38,17 @@ class Application(App):
     """Class that represent the main application and inherits from the textual App class."""
 
     TITLE = f'{CONFIG.data.appearance.style.icons.playlist} Playlist'
-    CSS = (
-        f'$primary: {CONFIG.data.appearance.style.colors.primary}; '
-        f'$background: {CONFIG.data.appearance.style.colors.background};'
-    )
-    CSS_PATH = Path(__file__).parent.joinpath('resources/styles/application.css')
     BINDINGS = [
         Binding(CONFIG.data.general.shortcuts.pages.quit, 'quit', 'Quit', show=True),
         Binding(CONFIG.data.general.shortcuts.pages.home, 'home', 'Home', show=True),
         Binding(CONFIG.data.general.shortcuts.pages.information, 'info', 'Info', show=True),
     ]
+    CSS = f'''
+    $primary: {CONFIG.data.appearance.style.colors.primary};
+    $background: {CONFIG.data.appearance.style.colors.background};
+
+    {Path(__file__).parent.joinpath('resources/styles/application.css').read_text(encoding='UTF-8')}
+    '''
 
     def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
         """Initializes the Application object.

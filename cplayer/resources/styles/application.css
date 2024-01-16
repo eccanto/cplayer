@@ -5,7 +5,7 @@ Header {
 
 Screen {
   align: center middle;
-  background: $background 30%;
+  background: $background;
 }
 
 Label {

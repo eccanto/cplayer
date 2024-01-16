@@ -297,3 +297,5 @@ tox -e check_code
     * `refactor`: Update requirements compatibility.
 * 1.1.4:
     * `refactor`: Update application compatibility.
+* 1.1.5:
+    * `fix`: Apply background and primary color from local configuration file.
