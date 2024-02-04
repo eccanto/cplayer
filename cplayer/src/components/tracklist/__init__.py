@@ -244,6 +244,10 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             self.draw()
 
     def delete_selected_song(self) -> Optional[Path]:
+        """Deletes the selected song.
+
+        :returns: The path of the deleted song.
+        """
         if self.index is not None:
             songs = [song.path for song in self.items]
             deleted_song = songs[self.index]

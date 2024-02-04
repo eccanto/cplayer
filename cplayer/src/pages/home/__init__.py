@@ -351,7 +351,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
             current_songs.extend(
                 [
-                    path for path in directory_path.glob('*.mp3')
+                    path
+                    for path in directory_path.glob('*.mp3')
                     if (path not in deleted_songs) and (path not in current_songs)
                 ]
             )
