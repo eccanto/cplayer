@@ -66,6 +66,7 @@ class PlaylistShortcutsType:  # pylint: disable=too-many-instance-attributes
     rewind: str
     forward: str
     select: str
+    synchronize: str
 
 
 @dataclass

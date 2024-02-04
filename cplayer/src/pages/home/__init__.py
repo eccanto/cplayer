@@ -47,6 +47,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         Binding(CONFIG.data.general.shortcuts.playlist.down_song, 'down_song_position', 'Down Song', show=False),
         Binding(CONFIG.data.general.shortcuts.playlist.change_order, 'change_order', 'Playlist order', show=False),
         Binding(CONFIG.data.general.shortcuts.playlist.go_to_position, 'go_to_position', 'Go to position', show=False),
+        Binding(CONFIG.data.general.shortcuts.playlist.synchronize, 'synchronize', 'Synchronize directory', show=False),
     ]
 
     def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
@@ -114,6 +115,11 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             on_enter=self.add_songs,
             on_quit=self.on_quit,
         )
+        self.synchronize_widget = InputLabelWidget(
+            f'{CONFIG.data.appearance.style.icons.directory} Synchronize from directory path',
+            on_enter=self.synchronize_directory,
+            on_quit=self.on_quit,
+        )
 
         self.selected_directory = path
         self.selected_playlist: Optional[PlayList] = None
@@ -130,7 +136,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.goto_position_widget.hide()
         self.status_song_widget.show()
         try:
-            self.tracklist_widget.go_to(int(self.goto_position_widget.value))
+            value = self.goto_position_widget.value.strip()
+            self.tracklist_widget.go_to(self.tracklist_widget.items_length if (value == '$') else int(value))
         except ValueError:
             logging.error('invalid position value: %s', self.goto_position_widget.value)
 
@@ -149,16 +156,6 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         mixer.music.set_volume(self._volume)
 
         self.status_song_widget.volume.update(progress=self._volume)
-
-    def action_play_pause(self) -> None:
-        """Toggles play/pause for the currently playing song."""
-        self._playing = not mixer.music.get_busy()
-        if self._playing:
-            self.status_song_widget.progress.set_status(ProgressStatusWidget.Status.PLAYING)
-            mixer.music.unpause()
-        else:
-            self.status_song_widget.progress.set_status(ProgressStatusWidget.Status.PAUSED)
-            mixer.music.pause()
 
     def action_cursor_left(self, seconds: int = 5) -> None:
         """Move the playback position `seconds` backward."""
@@ -191,6 +188,20 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
         self.status_song_widget.volume.muted = mixer.music.get_volume() == 0
         self.status_song_widget.volume.update(progress=mixer.music.get_volume())
+
+    def action_play_pause(self) -> None:
+        """Toggles play/pause for the currently playing song."""
+        self._playing = not mixer.music.get_busy()
+        if self._playing:
+            position = mixer.music.get_pos()
+            if position > 0:
+                self.status_song_widget.progress.set_status(ProgressStatusWidget.Status.PLAYING)
+                mixer.music.unpause()
+            elif self.selected_playlist and self.selected_playlist.selected:
+                self.tracklist_widget.action_select_cursor()
+        else:
+            self.status_song_widget.progress.set_status(ProgressStatusWidget.Status.PAUSED)
+            mixer.music.pause()
 
     def play_song(self, song: Song) -> None:
         """Plays the selected song.
@@ -272,12 +283,6 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         """Plays the next song in the tracklist."""
         self.tracklist_widget.next_song()
 
-    def action_load_directory(self) -> None:
-        """Opens the input widget to load a directory path."""
-        self.status_song_widget.hide()
-
-        self.directory_widget.show()
-
     def action_load_path(self) -> None:
         """Opens the file explorer to load a directory or song path."""
         self.tracklist_widget.display = False
@@ -289,6 +294,11 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         :param path: The selected file path.
         """
         self._load_directory(path)
+
+    def action_load_directory(self) -> None:
+        """Opens the input widget to load a directory path."""
+        self.status_song_widget.hide()
+        self.directory_widget.show()
 
     async def load_directory(self) -> None:
         """Loads the selected directory path."""
@@ -307,12 +317,52 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             self.directory_widget.hide()
 
             self.tracklist_widget.set_songs(list(path.glob('*.mp3')), sort=True)
+
             self.tracklist_widget.display = True
             self.tracklist_widget.focus()
             self.status_song_widget.show()
         else:
             self.notification_widget.show(message=f'[#FFFF00] [#CC0000]directory "{path}" not found')
             self.directory_widget.focus()
+
+    def action_synchronize(self) -> None:
+        """Opens the input synchronization widget to synchronize the tracklist with the selected directory path."""
+        self.status_song_widget.hide()
+        self.synchronize_widget.show()
+
+    async def synchronize_directory(self) -> None:
+        """Synchronizes the tracklist with the widget input directory path."""
+        self._synchronize_directory(Path(self.synchronize_widget.value))
+
+    def _synchronize_directory(self, directory_path: Path) -> None:
+        """Synchronizes the tracklist with the selected directory path.
+
+        :param directory_path: The selected directory path.
+        """
+        logging.info('synchronizing path: "%s" (exists=%s)...', directory_path, directory_path.exists())
+
+        self.notification_widget.hide()
+
+        if directory_path.exists() and self.selected_playlist:
+            self.synchronize_widget.hide()
+
+            current_songs = [song.path for song in self.tracklist_widget.items]
+            deleted_songs = [Path(path) for path in self.selected_playlist.deleted_songs]
+
+            current_songs.extend(
+                [
+                    path for path in directory_path.glob('*.mp3')
+                    if (path not in deleted_songs) and (path not in current_songs)
+                ]
+            )
+            self.tracklist_widget.set_songs(current_songs, sort=True)
+
+            self.tracklist_widget.display = True
+            self.tracklist_widget.focus()
+            self.status_song_widget.show()
+        else:
+            self.notification_widget.show(message=f'[#FFFF00] [#CC0000]directory "{directory_path}" not found')
+            self.synchronize_widget.focus()
 
     async def make_progress(self) -> None:
         """Called automatically to advance the progress bar."""
@@ -330,6 +380,10 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
     def action_save_playlist(self) -> None:
         """Saves the current playlist."""
         self.status_song_widget.hide()
+
+        if self.selected_playlist:
+            self.playlist_name_widget.value = self.selected_playlist.name
+
         self.playlist_name_widget.show()
 
     def action_load_playlist(self) -> None:
@@ -395,7 +449,9 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
             logging.info('loading playlist "%s" with %s items...', self.selected_playlist.name, len(songs))
 
-            self.tracklist_widget.set_songs(songs)
+            self.tracklist_widget.set_songs(
+                [song for song in songs if song not in self.selected_playlist.deleted_songs]
+            )
             self.tracklist_widget.display = True
             self.tracklist_widget.focus()
 
@@ -441,15 +497,10 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
     async def action_delete_song(self) -> None:
         """Deletes the selected song from the playlist."""
-        if self.tracklist_widget.index is not None:
-            songs = [song.path for song in self.tracklist_widget.items]
-            del songs[self.tracklist_widget.index]
-
-            new_size = len(songs)
-            self.tracklist_widget.set_songs(
-                songs,
-                position=(new_size - 1) if (self.tracklist_widget.index >= new_size) else self.tracklist_widget.index,
-            )
+        deleted_song = self.tracklist_widget.delete_selected_song()
+        if deleted_song and self.selected_playlist:
+            self.selected_playlist.deleted_songs.append(deleted_song)
+            self.selected_playlist.save()
 
     async def action_add_songs(self) -> None:
         """Opens input widget to add songs to the playlist."""
@@ -466,6 +517,12 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         if path.exists():
             songs = [path] if path.is_file() else list(path.glob('*.mp3'))
             if songs:
+                if self.selected_playlist:
+                    self.selected_playlist.deleted_songs = [
+                        path for path in self.selected_playlist.deleted_songs if Path(path) not in songs
+                    ]
+                    self.selected_playlist.save()
+
                 self.add_songs_widget.hide()
                 self.tracklist_widget.add(songs)
                 self.tracklist_widget.focus()
@@ -501,6 +558,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
                     yield self.directory_widget
                     yield self.playlist_name_widget
                     yield self.add_songs_widget
+                    yield self.synchronize_widget
 
                 yield self.notification_widget
 

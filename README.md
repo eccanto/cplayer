@@ -299,3 +299,7 @@ tox -e check_code
     * `refactor`: Update application compatibility.
 * 1.1.5:
     * `fix`: Apply background and primary color from local configuration file.
+* 1.2.0:
+    * `feat`: Add displacement to the last position with `:$`.
+    * `feat`: Add synchronization feature to take a directory path and synchronize its files with the current playlist,
+      if the directory contains previously deleted songs they are not re-added.

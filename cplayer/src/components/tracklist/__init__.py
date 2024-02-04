@@ -243,6 +243,23 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             self.index -= 1
             self.draw()
 
+    def delete_selected_song(self) -> Optional[Path]:
+        if self.index is not None:
+            songs = [song.path for song in self.items]
+            deleted_song = songs[self.index]
+
+            del songs[self.index]
+
+            new_size = len(songs)
+            self.set_songs(
+                songs,
+                position=(new_size - 1) if (self.index >= new_size) else self.index,
+            )
+        else:
+            deleted_song = None
+
+        return deleted_song
+
     def set_songs(self, paths: List[Path], position: int = 0, sort: bool = False) -> None:
         """Updates the tracklist with a new list of audio file paths.
 

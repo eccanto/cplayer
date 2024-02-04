@@ -33,7 +33,7 @@ Available keymaps.
 | o               | `playlist` | Change playlist order              |
 | m               | `playlist` | Mute                               |
 | :               | `playlist` | Go to position                     |
-
+| Z               | `playlist` | Synchronize from directory path    |
 
 ### Configuration
 

@@ -14,16 +14,18 @@ class PlayList:
         :param path: The path to the playlist file.
         """
         self.path = path
-        self.name = self.path.stem.title()
+        self.name = self.path.stem
 
         if self.path.exists():
             data = json.loads(self.path.read_text(encoding='UTF-8'))
 
             self.selected: Optional[Path] = data['selected']
             self.songs = [Path(song_path) for song_path in data['songs']]
+            self.deleted_songs = [Path(song_path) for song_path in data.get('deleted_songs', [])]
         else:
             self.selected = None
             self.songs = []
+            self.deleted_songs = []
 
     def save(self) -> None:
         """Saves the playlist data to the file."""
@@ -34,6 +36,7 @@ class PlayList:
                     'path': str(self.path),
                     'selected': str(self.selected) if self.selected else None,
                     'songs': [str(path.absolute()) for path in self.songs],
+                    'deleted_songs': [str(path.absolute()) for path in self.deleted_songs],
                 },
                 json_file,
                 indent=2,
