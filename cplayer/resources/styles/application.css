@@ -60,3 +60,7 @@ Bar > .bar--bar {
     color: $primary;
     background: $primary 30%;
 }
+
+.bottom-size {
+    height: 5;
+}

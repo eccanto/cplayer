@@ -132,6 +132,8 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.console = Console()
         self.length = self.console.size.height - self._fixed_size
 
+        logging.info('console size: %s', self.length)
+
         self.items: List[Song] = []
         self.items_unfilter: List[Song] = []
         self.items_length = 0

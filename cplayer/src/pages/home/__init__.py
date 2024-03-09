@@ -548,7 +548,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         yield self.tracklist_widget
         yield self.file_explorer_widget
 
-        with Middle(classes='bottom full-width'):
+        with Middle(classes='bottom bottom-size full-width'):
             with Vertical(classes='bottom full-width panel'):
                 with Horizontal(classes='full-width'):
                     yield self.status_song_widget
