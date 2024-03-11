@@ -33,7 +33,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Programming Language :: Python :: 3.11',
     ],
-    python_requires='>=3.11.5,<3.12.0',
+    python_requires='>=3.10,<4',
     entry_points={
         'console_scripts': [
             'cplayer = cplayer.__main__:main',

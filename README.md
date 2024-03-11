@@ -232,42 +232,49 @@ versions, the following steps must be followed:
 
 #### Static code analysis tools
 
-These are the static analysis tools that will help us to follow good practices and style guides of our source code. We
-will be using the following tools, which will be executed when generating a new push in the repository (git hooks).
+These are the static code analysis tools that will help us to follow good practices and style guides of our source code.
+We will be using the following tools, which will be executed when generating a new push in the repository (git hooks).
 
-##### Python static checkers
+### Python static code analysis tools
 
-Tools used:
+The tools used are:
 
-* [brunette](https://github.com/odwyersoftware/brunette): A best practice Python code formatter.
-* [isort](https://pycqa.github.io/isort/): Python utility / library to sort imports alphabetically, and automatically
-  separated into sections and by type.
+* [ruff](https://github.com/astral-sh/ruff): An extremely fast Python linter and code formatter, written in Rust.
+
+  Tools executed by Ruff:
+
+  * [pycodestyle](https://github.com/PyCQA/pycodestyle): Pycodestyle is a tool to check your Python code against some
+    of the style conventions in [PEP 8](https://peps.python.org/pep-0008/).
+  * [ruff-format](https://github.com/astral-sh/ruff/blob/main/docs/formatter.md#black-compatibility): The formatter
+    is designed to be a drop-in replacement for [Black](https://github.com/psf/black).
+  * [flake8](https://github.com/PyCQA/flake8): Flake8 is a python tool that glues together pycodestyle, pyflakes,
+    and third-party plugins to check the style and quality of some python code.
+  * [pydocstyle](https://github.com/PyCQA/pydocstyle): Pydocstyle is a static analysis tool for checking compliance
+    with [Google-style docstrings](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings).
+  * [isort](https://pycqa.github.io/isort/): Python utility / library to sort imports alphabetically, and automatically
+    separated into sections and by type.
+  * [mccabe](https://github.com/PyCQA/mccabe): Complexity checker.
+  * [bandit](https://github.com/PyCQA/bandit): Bandit is a tool designed to find common security issues.
+  * [tryceratops](https://github.com/guilatrova/tryceratops): A linter to prevent exception handling antipatterns in
+    Python.
+
 * [prospector](https://github.com/PyCQA/prospector): Prospector is a tool to analyze Python code and output information
   about errors, potential problems, convention violations and complexity.
 
   Tools executed by Prospector:
   * [pylint](https://github.com/PyCQA/pylint): Pylint is a Python static code analysis tool which looks for programming
     errors, helps enforcing a coding standard, sniffs for code smells and offers simple refactoring suggestions.
-  * [bandit](https://github.com/PyCQA/bandit): Bandit is a tool designed to find common security issues.
   * [dodgy](https://github.com/landscapeio/dodgy): It is a series of simple regular expressions designed to detect
     things such as accidental SCM diff checkins, or passwords or secret keys hard coded into files.
-  * [mccabe](https://github.com/PyCQA/mccabe): Complexity checker.
   * [mypy](https://github.com/python/mypy): Mypy is an optional static type checker for Python.
-  * [pydocstyle](https://github.com/PyCQA/pydocstyle): pydocstyle is a static analysis tool for checking compliance
-    with Python [PEP 257](https://peps.python.org/pep-0257/).
-  * [pycodestyle](https://pycodestyle.pycqa.org/en/latest/): pycodestyle is a tool to check your Python code against
-    some of the style conventions in [PEP 8](https://peps.python.org/pep-0008/).
-  * [pyflakes](https://github.com/PyCQA/pyflakes): Pyflakes analyzes programs and detects various errors.
   * [pyroma](https://github.com/regebro/pyroma): Pyroma is a product aimed at giving a rating of how well a Python
     project complies with the best practices of the Python packaging ecosystem, primarily PyPI, pip, Distribute etc,
     as well as a list of issues that could be improved.
-* [twine](https://twine.readthedocs.io/en/stable/): The `twine check` command is used to perform various checks on a
-  Python package distribution before uploading it to the **Python Package Index** (PyPI) using twine.
 
-##### Run manually
+### Run manually
 
 ```bash
-tox -e check_code
+bash .githooks/pre-push
 ```
 
 ## License

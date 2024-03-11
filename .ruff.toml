@@ -1,0 +1,30 @@
+target-version = "py311"
+line-length = 120
+indent-width = 4
+show-source = true
+
+[isort]
+lines-after-imports = 2
+
+[lint]
+select = [
+    "ALL"
+]
+ignore = [
+    "ANN101",  # mypy infer the type of self automatically.
+]
+
+fixable = [
+    "ALL"
+]
+unfixable = []
+
+[lint.flake8-quotes]
+inline-quotes = "single"
+docstring-quotes = "double"
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.mccabe]
+max-complexity = 10
