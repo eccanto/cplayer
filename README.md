@@ -274,7 +274,7 @@ The tools used are:
 ### Run manually
 
 ```bash
-bash .githooks/pre-push
+poetry run tox -e check_code
 ```
 
 ## License

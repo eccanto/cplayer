@@ -1,0 +1,62 @@
+[tool.poetry]
+name = "cplayer"
+version = "1.2.1"
+description = "Minimalist song player implemented with Python"
+authors = ["Erik Ccanto <ccanto.erik@gmail.com>"]
+repository = "https://github.com/eccanto/cplayer"
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "cplayer" },
+]
+keywords = [
+    "music",
+    "songs player",
+    "command line",
+]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: Unix",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.11",
+]
+include = [
+    "cplayer/documentation/**",
+    "cplayer/resources/**",
+    "cplayer/**/*.css",
+]
+exclude = [
+    "tests",
+]
+
+[tool.poetry.scripts]
+cplayer = 'cplayer.__main__:main'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+numpy = "^1.26.4"
+pygame = "^2.5.2"
+pydub = "^0.25.1"
+textual = "^0.52.1"
+pyyaml = "^6.0.1"
+dotmap = "^1.3.30"
+yt-dlp = "^2024.3.10"
+tox = "^4.14.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+prospector = "^1.10.3"
+mypy = "^1.9.0"
+twine = "^5.0.0"
+assertpy = "^1.1"
+ruff = "^0.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
