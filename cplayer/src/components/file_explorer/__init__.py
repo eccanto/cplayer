@@ -39,7 +39,7 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
         """
         DirectoryTree.__init__(self, path=path, name=name, id=id, classes=classes, disabled=disabled)
         HiddenWidget.__init__(
-            self, *children, name=name, id=id, classes=classes, disabled=disabled, start_hidden=start_hidden,
+            self, *children, name=name, id=id, classes=classes, disabled=disabled, start_hidden=start_hidden
         )
 
         self.default_path = path
@@ -51,7 +51,7 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
 
         self.path = self.default_path
 
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:  # noqa: PLR6301
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         """Filters the provided iterable of paths based on some criteria.
 
         :param paths: An iterable of paths to be filtered.

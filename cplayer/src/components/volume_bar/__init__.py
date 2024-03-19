@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widget import Widget
 from textual.widgets import Label, ProgressBar
-from textual.widgets._progress_bar import UNUSED  # noqa: PLC2701
+from textual.widgets._progress_bar import UNUSED
 
 from cplayer.src.elements import CONFIG
 

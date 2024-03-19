@@ -13,6 +13,9 @@ output-format = "full"
     "S607",  # NOTE: Disable for testing.
     "S404",  # NOTE: Disable for testing.
 ]
+"cplayer/__main__.py" = [
+    "E402",  # NOTE: Already tested by prospector:pylint.
+]
 
 [lint]
 select = [
@@ -23,6 +26,8 @@ ignore = [
     "D",       # TODO: Remove this line.
     "FBT001",  # NOTE: Ignored to overwrite third party package methods.
     "CPY001",  # NOTE: Ignore copyright notice.
+    "COM812",  # NOTE: May cause conflicts when used with the ruff formatter.
+    "ISC001",  # NOTE: May cause conflicts when used with the ruff formatter.
 ]
 
 fixable = [
@@ -40,7 +45,7 @@ builtins-ignorelist = [
 
 [lint.flake8-quotes]
 inline-quotes = "single"
-multiline-quotes = "single"
+multiline-quotes = "double"
 docstring-quotes = "double"
 
 [lint.pydocstyle]
@@ -48,3 +53,6 @@ convention = "google"
 
 [lint.mccabe]
 max-complexity = 10
+
+[format]
+quote-style = "single"

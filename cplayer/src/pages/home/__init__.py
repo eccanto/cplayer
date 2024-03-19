@@ -29,7 +29,7 @@ except ImportError:
     from typing_extensions import Self
 
 
-class HomePage(PageBase):  # noqa: PLR0904
+class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """HomePage Class that represents the home page of the application."""
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
@@ -422,7 +422,7 @@ class HomePage(PageBase):  # noqa: PLR0904
         self.select_order_widget.hide()
 
         self.tracklist_widget.order = next(
-            (order for order in PlaylistOrder if order.value == option), PlaylistOrder.ASCENDING,
+            (order for order in PlaylistOrder if order.value == option), PlaylistOrder.ASCENDING
         )
         CONFIG.data.general.playlist.order = self.tracklist_widget.order.value
         CONFIG.save()

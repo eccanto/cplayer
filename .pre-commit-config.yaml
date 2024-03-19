@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/PyCQA/prospector
+    rev: v1.10.3
+    hooks:
+      - id: prospector
+        language: system
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.3
+    hooks:
+      - id: ruff
+      - id: ruff-format
+        args: ["--check", "--diff"]
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets

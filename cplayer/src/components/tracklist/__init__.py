@@ -92,7 +92,7 @@ class PlaylistOrder(Enum):
     RANDOM = 'random'
 
 
-class TracklistWidget(VerticalScroll):  # noqa: PLR0904
+class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attributes
     """Tracklist widget."""
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
@@ -105,7 +105,7 @@ class TracklistWidget(VerticalScroll):  # noqa: PLR0904
         Binding(CONFIG.data.general.shortcuts.playlist.select, 'select_cursor', 'Reproduce', show=False),
     ]
 
-    def __init__(  # noqa: PLR0913, PLR0917
+    def __init__(  # noqa: PLR0913
         self,
         on_select: Callable[[Song], None],
         on_cursor_left: Callable[[], None],

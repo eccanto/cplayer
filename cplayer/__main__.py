@@ -45,12 +45,12 @@ class Application(App):
         Binding(CONFIG.data.general.shortcuts.pages.home, 'home', 'Home', show=True),
         Binding(CONFIG.data.general.shortcuts.pages.information, 'info', 'Info', show=True),
     ]
-    CSS: ClassVar[str] = f'''
+    CSS: ClassVar[str] = f"""
     $primary: {CONFIG.data.appearance.style.colors.primary};
     $background: {CONFIG.data.appearance.style.colors.background};
 
     {Path(__file__).parent.joinpath('resources/styles/application.css').read_text(encoding='UTF-8')}
-    '''
+    """
 
     def __init__(
         self,
