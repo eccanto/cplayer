@@ -1,34 +1,40 @@
 import random
+from collections.abc import Callable
 from difflib import SequenceMatcher
 from enum import Enum
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import ClassVar
 
-import numpy
+import numpy as np
 from pydub import AudioSegment
 from pydub.logging_utils import logging
 from rich.console import Console
 from textual.app import ComposeResult
-from textual.binding import Binding
+from textual.binding import Binding, BindingType
 from textual.containers import VerticalScroll
+from textual.geometry import Region
+from textual.widget import Widget
 from textual.widgets import Label
-from typing_extensions import Self
 
 from cplayer.src.elements import CONFIG
+
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 
 class Song:
     """Song item."""
 
-    def __init__(self, path: Path, on_play: Callable[['Song'], None], *args, **kwargs) -> None:
+    def __init__(self, path: Path, on_play: Callable[['Song'], None]) -> None:
         """Initializes the Widget object.
 
         :param path: The path to the audio file.
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(*args, **kwargs)
-
         self.path = path
         self.on_play = on_play
 
@@ -55,25 +61,26 @@ class Song:
         self.on_play(self)
 
     @property
-    def seconds(self):
+    def seconds(self) -> float | None:
         """Calculates and returns the duration of the audio in seconds.
 
         :returns: The duration of the audio in seconds.
         """
         if self._seconds is None:
             self._audio = AudioSegment.from_mp3(self.path)
-            self._seconds = len(self._audio) / 1000.0
-            self.frame_rate = self._audio.frame_rate
+            if self._audio:
+                self._seconds = len(self._audio) / 1000.0
+                self.frame_rate = self._audio.frame_rate
         return self._seconds
 
     @property
-    def buffer(self):
+    def buffer(self) -> np.ndarray | None:
         """Returns the audio data as a numpy array.
 
         :returns: The audio data as a numpy array.
         """
         if self._buffer is None and self._audio:
-            self._buffer = numpy.array(self._audio.get_array_of_samples())
+            self._buffer = np.array(self._audio.get_array_of_samples())
         return self._buffer
 
 
@@ -85,12 +92,12 @@ class PlaylistOrder(Enum):
     RANDOM = 'random'
 
 
-class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attributes
+class TracklistWidget(VerticalScroll):  # noqa: PLR0904
     """Tracklist widget."""
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
-    BINDINGS = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         Binding(CONFIG.data.general.shortcuts.playlist.up, 'cursor_up', 'Cursor Up', show=False),
         Binding(CONFIG.data.general.shortcuts.playlist.down, 'cursor_down', 'Cursor Down', show=False),
         Binding(CONFIG.data.general.shortcuts.playlist.rewind, 'cursor_left', '-5 secs', show=False),
@@ -98,7 +105,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         Binding(CONFIG.data.general.shortcuts.playlist.select, 'select_cursor', 'Reproduce', show=False),
     ]
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # noqa: PLR0913, PLR0917
         self,
         on_select: Callable[[Song], None],
         on_cursor_left: Callable[[], None],
@@ -106,7 +113,11 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         on_change_position: Callable[[int, int], None],
         order: PlaylistOrder = PlaylistOrder.ASCENDING,
         fixed_size: int = 0,
-        **kwargs,
+        *children: Widget,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
     ) -> None:
         """Initializes the Widget object.
 
@@ -116,7 +127,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         :param order: The order in which the playlist is played.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(**kwargs)
+        super().__init__(*children, name=name, id=id, classes=classes, disabled=disabled)
 
         self._fixed_size = fixed_size
 
@@ -127,19 +138,19 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
 
         self.order = order
 
-        self.current_song: Optional[Song] = None
+        self.current_song: Song | None = None
 
         self.console = Console()
         self.length = self.console.size.height - self._fixed_size
 
         logging.info('console size: %s', self.length)
 
-        self.items: List[Song] = []
-        self.items_unfilter: List[Song] = []
+        self.items: list[Song] = []
+        self.items_unfilter: list[Song] = []
         self.items_length = 0
         self.index = 0
 
-        self.filter_pattern: Optional[str] = None
+        self.filter_pattern: str | None = None
 
         self.content = Label('No data.')
 
@@ -156,7 +167,12 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         """
         yield self.content
 
-    def refresh(self, *args, **kwargs) -> Self:
+    def refresh(
+        self,
+        *regions: Region,
+        repaint: bool = True,
+        layout: bool = False,
+    ) -> Self:
         """Refresh the tracklist widget.
 
         :param *args: Variable length argument list.
@@ -173,7 +189,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             if self.current_song:
                 self.select(self.current_song.path)
 
-        return super().refresh(*args, **kwargs)
+        return super().refresh(*regions, repaint=repaint, layout=layout)
 
     def clean(self) -> None:
         """Cleans seleted song in the tracklist."""
@@ -227,7 +243,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             rows.append(
                 f'[{self._colors.text}]'
                 f'{f"[{self._colors.playing_label}]" if is_current_song else CONFIG.data.appearance.style.icons.song} '
-                f'[{self._colors.primary if (index == 0) else self._colors.text}]{song.path.name}'
+                f'[{self._colors.primary if (index == 0) else self._colors.text}]{song.path.name}',
             )
 
         self.content.update('\n'.join(rows))
@@ -245,7 +261,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             self.index -= 1
             self.draw()
 
-    def delete_selected_song(self) -> Optional[Path]:
+    def delete_selected_song(self) -> Path | None:
         """Deletes the selected song.
 
         :returns: The path of the deleted song.
@@ -266,7 +282,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
 
         return deleted_song
 
-    def set_songs(self, paths: List[Path], position: int = 0, sort: bool = False) -> None:
+    def set_songs(self, paths: list[Path], position: int = 0, sort: bool = False) -> None:  # noqa: FBT002
         """Updates the tracklist with a new list of audio file paths.
 
         :param paths: A list of paths to the audio files.
@@ -293,7 +309,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         self.index = position
         self.draw()
 
-    def add(self, paths: List[Path]) -> None:
+    def add(self, paths: list[Path]) -> None:
         """Adds new file paths to the tracklist.
 
         :param items: A list of paths to the audio files.
@@ -354,10 +370,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
 
         :param position: The position to swap with.
         """
-        if self.index < position:
-            new_index = min(position, self.items_length - 1)
-        else:
-            new_index = max(position, 0)
+        new_index = min(position, self.items_length - 1) if self.index < position else max(position, 0)
 
         current_item = self.items[self.index]
         new_item = self.items[new_index]

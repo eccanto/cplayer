@@ -34,9 +34,16 @@ class ProgressStatusWidget(Widget):
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        *children: Widget,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+    ) -> None:
         """Initializes the widget object."""
-        super().__init__(*args, **kwargs)
+        super().__init__(*children, name=name, id=id, classes=classes, disabled=disabled)
 
         self.total_seconds = '00:00'
         self.progress_label = Label('00:00/00:00')

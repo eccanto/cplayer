@@ -16,12 +16,14 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import ClassVar
 
 import click
 from pygame import mixer
+from textual._path import CSSPathType
 from textual.app import App, ComposeResult
-from textual.binding import Binding
+from textual.binding import Binding, BindingType
+from textual.driver import Driver
 from textual.widgets import Footer, Header
 
 from cplayer import __version__
@@ -38,26 +40,32 @@ class Application(App):
     """Class that represent the main application and inherits from the textual App class."""
 
     TITLE = f'{CONFIG.data.appearance.style.icons.playlist} Playlist'
-    BINDINGS = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         Binding(CONFIG.data.general.shortcuts.pages.quit, 'quit', 'Quit', show=True),
         Binding(CONFIG.data.general.shortcuts.pages.home, 'home', 'Home', show=True),
         Binding(CONFIG.data.general.shortcuts.pages.information, 'info', 'Info', show=True),
     ]
-    CSS = f'''
+    CSS: ClassVar[str] = f'''
     $primary: {CONFIG.data.appearance.style.colors.primary};
     $background: {CONFIG.data.appearance.style.colors.background};
 
     {Path(__file__).parent.joinpath('resources/styles/application.css').read_text(encoding='UTF-8')}
     '''
 
-    def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
+    def __init__(
+        self,
+        path: Path | None,
+        driver_class: type[Driver] | None = None,
+        css_path: CSSPathType | None = None,
+        watch_css: bool = False,  # noqa: FBT002
+    ) -> None:
         """Initializes the Application object.
 
         :param path: The optional path of the directory songs.
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(driver_class, css_path, watch_css)
 
         self.home_page = HomePage(path, change_title=self.set_title, start_hidden=False)
         self.help_page = HelpPage(change_title=self.set_title)
@@ -112,8 +120,7 @@ class Application(App):
     help='URL of the song to download from YouTube.',
 )
 @click.version_option(version=__version__)
-def main(path: Optional[Path], url: Optional[str]) -> None:
-    # noqa: D413, D407, D412, D406
+def main(path: Path | None, url: str | None) -> None:
     """Command Line Python player CLI.
 
     This command line tool plays music files from a specified directory or last used playlist.

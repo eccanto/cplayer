@@ -1,10 +1,18 @@
-target-version = "py311"
+src = [
+    "src",
+    "tests",
+]
+target-version = "py310"
 line-length = 120
 indent-width = 4
-show-source = true
+output-format = "full"
 
-[isort]
-lines-after-imports = 2
+[lint.per-file-ignores]
+"**/{tests}/*" = [
+    "S603",  # NOTE: Disable for testing.
+    "S607",  # NOTE: Disable for testing.
+    "S404",  # NOTE: Disable for testing.
+]
 
 [lint]
 select = [
@@ -12,6 +20,9 @@ select = [
 ]
 ignore = [
     "ANN101",  # mypy infer the type of self automatically.
+    "D",       # TODO: Remove this line.
+    "FBT001",  # NOTE: Ignored to overwrite third party package methods.
+    "CPY001",  # NOTE: Ignore copyright notice.
 ]
 
 fixable = [
@@ -19,8 +30,17 @@ fixable = [
 ]
 unfixable = []
 
+[lint.isort]
+lines-after-imports = 2
+
+[lint.flake8-builtins]
+builtins-ignorelist = [
+    "id",
+]
+
 [lint.flake8-quotes]
 inline-quotes = "single"
+multiline-quotes = "single"
 docstring-quotes = "double"
 
 [lint.pydocstyle]

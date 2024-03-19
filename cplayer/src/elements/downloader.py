@@ -49,7 +49,7 @@ class YoutubeDownloader:  # pylint: disable=too-few-public-methods
                     downloader.download([self.url])
 
                     name = Prompt.ask('song Name', default=information['fulltitle'])
-                    path = Prompt.ask('destination Path', default=str(Path('.').absolute()))
+                    path = Prompt.ask('destination Path', default=str(Path().absolute()))
                     destination = Path(path).joinpath(f'{name}.mp3')
 
                     downloaded_file = next(output_directory.glob('*.mp3'))

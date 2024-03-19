@@ -1,19 +1,27 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, List, Self, Union
+from typing import Any, ClassVar
 
 from textual.app import ComposeResult
-from textual.binding import Binding
+from textual.binding import Binding, BindingType
 from textual.containers import Middle, VerticalScroll
+from textual.widget import Widget
 from textual.widgets import Label
 
 from cplayer.src.components.hidden_widget import HiddenWidget
 from cplayer.src.elements import CONFIG
 
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
+
 class CustomListView(VerticalScroll):
     """Custom list view."""
 
-    BINDINGS = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         Binding('up', 'cursor_up', 'Cursor Up', show=False),
         Binding('down', 'cursor_down', 'Cursor Down', show=False),
         Binding('escape', 'quit', 'Quit'),
@@ -23,8 +31,8 @@ class CustomListView(VerticalScroll):
     def __init__(
         self,
         on_quit: Callable[[], None],
-        on_select: Callable[[Union[Path, str]], None],
-        *children,
+        on_select: Callable[[Path | str], None],
+        *children: Widget,
     ) -> None:
         """Initializes the Widget object.
 
@@ -37,7 +45,7 @@ class CustomListView(VerticalScroll):
         self._on_quit = on_quit
         self._on_select = on_select
 
-        self.options: List[Option] = []
+        self.options: list[Option] = []
         self.index = 0
 
         self._colors = CONFIG.data.appearance.style.colors
@@ -57,11 +65,11 @@ class CustomListView(VerticalScroll):
         for index, option in enumerate(self.options):
             rows.append(
                 f'[{self._colors.primary if (index == self.index) else self._colors.text}]'
-                f'{option.prefix}{option.to_string(option.data)}'
+                f'{option.prefix}{option.to_string(option.data)}',
             )
         self.content.update('\n'.join(rows))
 
-    def update(self, options: List['Option']) -> None:
+    def update(self, options: list['Option']) -> None:
         """Updates the list view with a new set of options.
 
         :param options: A list of option objects representing the new options.
@@ -95,7 +103,7 @@ class CustomListView(VerticalScroll):
 class Option:  # pylint: disable=too-few-public-methods
     """Option in the list view."""
 
-    def __init__(self, data: Union[Path, str], prefix: str, to_string: Callable[[Any], str]) -> None:
+    def __init__(self, data: Path | str, prefix: str, to_string: Callable[[Any], str]) -> None:
         """Initializes the Widget object.
 
         :param data: The data associated with the option.
@@ -113,13 +121,17 @@ class OptionsListWidget(HiddenWidget):
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         label: str,
         on_quit: Callable[[HiddenWidget], None],
-        on_select: Callable[[Union[Path, str]], None],
-        *children,
-        **kwargs,
+        on_select: Callable[[Path | str], None],
+        *children: Widget,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+        start_hidden: bool = True,
     ) -> None:
         """Initializes the Widget object.
 
@@ -129,7 +141,7 @@ class OptionsListWidget(HiddenWidget):
         :param *children: Variable length argument list for child elements.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(**kwargs)
+        super().__init__(*children, name=name, id=id, classes=classes, disabled=disabled, start_hidden=start_hidden)
 
         self._label = label
         self._on_quit = on_quit
@@ -147,7 +159,7 @@ class OptionsListWidget(HiddenWidget):
             yield self.label
             yield self.list_view
 
-    def focus(self, scroll_visible: bool = True) -> Self:
+    def focus(self, scroll_visible: bool = True) -> Self:  # noqa: FBT002
         """Sets the focus on the options list.
 
         :param scroll_visible: Whether to scroll the options list into the visible area.

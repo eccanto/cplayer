@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from typing import Optional
 
 
 class PlayList:
@@ -19,7 +18,7 @@ class PlayList:
         if self.path.exists():
             data = json.loads(self.path.read_text(encoding='UTF-8'))
 
-            self.selected: Optional[Path] = data['selected']
+            self.selected: Path | None = data['selected']
             self.songs = [Path(song_path) for song_path in data['songs']]
             self.deleted_songs = [Path(song_path) for song_path in data.get('deleted_songs', [])]
         else:
@@ -29,7 +28,7 @@ class PlayList:
 
     def save(self) -> None:
         """Saves the playlist data to the file."""
-        with open(self.path, 'w', encoding='UTF-8') as json_file:
+        with self.path.open('w', encoding='UTF-8') as json_file:
             json.dump(
                 {
                     'name': self.name,

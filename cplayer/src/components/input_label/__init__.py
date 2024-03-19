@@ -1,28 +1,41 @@
+from collections.abc import Callable, Coroutine
 from pathlib import Path
-from typing import Callable, Coroutine, Self
+from typing import ClassVar
 
 from textual.app import ComposeResult
+from textual.binding import BindingType
+from textual.widget import Widget
 from textual.widgets import Input
 
 from cplayer.src.components.hidden_widget import HiddenWidget
 
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
+
 class InputLabelWidget(HiddenWidget):
     """An input with a label."""
 
-    BINDINGS = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         ('escape', 'quit', 'Quit'),
     ]
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_label: str,
         on_enter: Callable[[], Coroutine[None, None, None]],
         on_quit: Callable[['InputLabelWidget'], None],
-        *args,
-        **kwargs,
+        *children: Widget,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+        start_hidden: bool = True,
     ) -> None:
         """Initializes the Widget object.
 
@@ -32,7 +45,7 @@ class InputLabelWidget(HiddenWidget):
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*children, name=name, id=id, classes=classes, disabled=disabled, start_hidden=start_hidden)
 
         self.input_widget = Input(placeholder=input_label)
 
@@ -44,7 +57,7 @@ class InputLabelWidget(HiddenWidget):
 
         :returns: The ComposeResult object representing the composed layout.
         """
-        self.input_widget.action_submit = self.on_enter  # type: ignore
+        self.input_widget.action_submit = self.on_enter  # type: ignore[method-assign]
         yield self.input_widget
 
     @property
@@ -63,7 +76,7 @@ class InputLabelWidget(HiddenWidget):
         """Perform the action associated with quitting the input label widget."""
         self.on_quit(self)
 
-    def focus(self, scroll_visible: bool = True) -> Self:
+    def focus(self, scroll_visible: bool = True) -> Self:  # noqa: FBT002
         """Sets the focus on the input widget.
 
         :param scroll_visible: Whether to scroll the widget into the visible area.

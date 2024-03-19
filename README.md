@@ -310,3 +310,7 @@ poetry run tox -e check_code
     * `feat`: Add displacement to the last position with `:$`.
     * `feat`: Add synchronization feature to take a directory path and synchronize its files with the current playlist,
       if the directory contains previously deleted songs they are not re-added.
+* 1.2.1:
+    * `fix`: Fix an error in the size of the layouts.
+    * `refactor`: Add poetry as a dependency and packaging manager.
+    * `refactor`: General refactoring on static code analysis tools.

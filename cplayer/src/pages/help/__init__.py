@@ -1,10 +1,15 @@
 from pathlib import Path
-from typing import Self
 
 from textual.app import ComposeResult
 from textual.widgets import MarkdownViewer
 
 from cplayer.src.pages.base import PageBase
+
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 
 class HelpPage(PageBase):
@@ -21,7 +26,7 @@ class HelpPage(PageBase):
         """
         yield MarkdownViewer(self._CONTENT, show_table_of_contents=True)
 
-    def focus(self, scroll_visible: bool = True) -> Self:
+    def focus(self, scroll_visible: bool = True) -> Self:  # noqa: FBT002
         """Focus on the MarkdownViewer widget.
 
         :param scroll_visible: Whether to make the scroll visible when focusing.

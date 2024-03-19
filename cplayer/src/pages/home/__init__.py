@@ -1,12 +1,13 @@
 """Module that contains the implementation of a music player application."""
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Optional, Self, Union
+from typing import ClassVar
 
 from pygame import mixer
 from textual.app import ComposeResult
-from textual.binding import Binding
+from textual.binding import Binding, BindingType
 from textual.containers import Horizontal, Middle, Vertical
 
 from cplayer.src.components.file_explorer import FileExplorerWidget
@@ -22,12 +23,18 @@ from cplayer.src.elements.playlist import PlayList
 from cplayer.src.pages.base import PageBase
 
 
-class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-instance-attributes
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
+
+class HomePage(PageBase):  # noqa: PLR0904
     """HomePage Class that represents the home page of the application."""
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
-    BINDINGS = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         Binding(CONFIG.data.general.shortcuts.songs.play_pause, 'play_pause', 'Play/Pause', show=False),
         Binding(CONFIG.data.general.shortcuts.songs.decrease_volume, 'decrease_volume', 'Decrease Volume', show=True),
         Binding(CONFIG.data.general.shortcuts.songs.increase_volume, 'increase_volume', 'Increase Volume', show=True),
@@ -50,14 +57,19 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         Binding(CONFIG.data.general.shortcuts.playlist.synchronize, 'synchronize', 'Synchronize directory', show=False),
     ]
 
-    def __init__(self, path: Optional[Path], *args, **kwargs) -> None:
+    def __init__(
+        self,
+        path: Path | None,
+        change_title: Callable[[str], None],
+        start_hidden: bool = True,  # noqa: FBT002
+    ) -> None:
         """Initializes the Page object.
 
         :param path: The initial songs path to be loaded.
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(change_title=change_title, start_hidden=start_hidden)
 
         self.playlists_directory = Path(CONFIG.data.general.playlist.directory).expanduser()
         self.playlists_directory.mkdir(parents=True, exist_ok=True)
@@ -78,7 +90,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             ),
             fixed_size=11 if CONFIG.data.appearance.style.footer else 8,
         )
-        self.file_explorer_widget = FileExplorerWidget(Path('~').expanduser(), on_select=self.on_select_path)
+        self.file_explorer_widget = FileExplorerWidget(path=Path('~').expanduser(), on_select=self.on_select_path)
 
         self.notification_widget = NotificationWidget('')
 
@@ -122,7 +134,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         )
 
         self.selected_directory = path
-        self.selected_playlist: Optional[PlayList] = None
+        self.selected_playlist: PlayList | None = None
 
     def action_go_to_position(self) -> None:
         """Opens position navigator widget."""
@@ -139,7 +151,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             value = self.goto_position_widget.value.strip()
             self.tracklist_widget.go_to(self.tracklist_widget.items_length if (value == '$') else int(value))
         except ValueError:
-            logging.error('invalid position value: %s', self.goto_position_widget.value)
+            logging.exception('invalid position value: %s', self.goto_position_widget.value)
 
         self.tracklist_widget.focus()
 
@@ -208,27 +220,30 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
 
         :param song: The song to be played.
         """
-        try:
-            self._start_position = 0
-            mixer.music.load(song.path)
-            mixer.music.play()
+        if song.seconds:
+            try:
+                self._start_position = 0
+                mixer.music.load(song.path)
+                mixer.music.play()
 
-            self._playing = True
+                self._playing = True
 
-            self.status_song_widget.progress.set_status(ProgressStatusWidget.Status.PLAYING)
-            self.status_song_widget.progress.total_seconds = (
-                f'{(int(song.seconds) // 60):02}:{(int(song.seconds) % 60):02}'
-            )
+                self.status_song_widget.progress.set_status(ProgressStatusWidget.Status.PLAYING)
+                self.status_song_widget.progress.total_seconds = (
+                    f'{(int(song.seconds) // 60):02}:{(int(song.seconds) % 60):02}'
+                )
 
-            if self.selected_playlist:
-                self.selected_playlist.select(song.path)
-        except Exception as error:  # pylint: disable=broad-exception-caught
-            logging.error('Error playing the song "%s": %s', song.path, error)
+                if self.selected_playlist:
+                    self.selected_playlist.select(song.path)
+            except Exception:  # pylint: disable=broad-exception-caught
+                logging.exception('error playing the song "%s"', song.path)
 
-            self.tracklist_widget.next_song()
+                self.tracklist_widget.next_song()
 
-            if self.parent:
-                self.parent.refresh()
+                if self.parent:
+                    self.parent.refresh()
+        else:
+            logging.warning('invalid song: %s', song)
 
     def action_reset(self) -> None:
         """Resets the currently selected song."""
@@ -354,7 +369,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
                     path
                     for path in directory_path.glob('*.mp3')
                     if (path not in deleted_songs) and (path not in current_songs)
-                ]
+                ],
             )
             self.tracklist_widget.set_songs(current_songs, sort=True)
 
@@ -395,11 +410,11 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             [
                 Option(path, f'{CONFIG.data.appearance.style.icons.playlist} ', lambda path: path.stem)
                 for path in self.playlists_directory.glob('*.playlist')
-            ]
+            ],
         )
         self.select_playlist_widget.show()
 
-    def select_order(self, option: Union[Path, str]) -> None:
+    def select_order(self, option: Path | str) -> None:
         """Selects the playlist order.
 
         :param option: The selected playlist order option.
@@ -407,7 +422,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.select_order_widget.hide()
 
         self.tracklist_widget.order = next(
-            (order for order in PlaylistOrder if order.value == option), PlaylistOrder.ASCENDING
+            (order for order in PlaylistOrder if order.value == option), PlaylistOrder.ASCENDING,
         )
         CONFIG.data.general.playlist.order = self.tracklist_widget.order.value
         CONFIG.save()
@@ -427,11 +442,11 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             [
                 Option(order.value, f'{CONFIG.data.appearance.style.icons.order} ', lambda order: order)
                 for order in PlaylistOrder
-            ]
+            ],
         )
         self.select_order_widget.show()
 
-    def select_playlist(self, path: Union[Path, str]) -> None:
+    def select_playlist(self, path: Path | str) -> None:
         """Selects a playlist from the available options.
 
         :param path: The selected playlist path.
@@ -451,7 +466,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             logging.info('loading playlist "%s" with %s items...', self.selected_playlist.name, len(songs))
 
             self.tracklist_widget.set_songs(
-                [song for song in songs if song not in self.selected_playlist.deleted_songs]
+                [song for song in songs if song not in self.selected_playlist.deleted_songs],
             )
             self.tracklist_widget.display = True
             self.tracklist_widget.focus()
@@ -465,7 +480,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             self.refresh()
         elif self.selected_playlist:
             self.notification_widget.show(
-                message=f'[#FFFF00] [#CC0000]playlist "{self.selected_playlist.path}" not found'
+                message=f'[#FFFF00] [#CC0000]playlist "{self.selected_playlist.path}" not found',
             )
 
     async def enter_playlist_name(self) -> None:
@@ -473,7 +488,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         self.notification_widget.hide()
 
         self.selected_playlist = PlayList(
-            self.playlists_directory.joinpath(self.playlist_name_widget.value).with_suffix('.playlist')
+            self.playlists_directory.joinpath(self.playlist_name_widget.value).with_suffix('.playlist'),
         )
         self.selected_playlist.selected = (
             self.tracklist_widget.current_song.path if self.tracklist_widget.current_song else None
@@ -548,20 +563,19 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
         yield self.tracklist_widget
         yield self.file_explorer_widget
 
-        with Middle(classes='bottom bottom-size full-width'):
-            with Vertical(classes='bottom full-width panel'):
-                with Horizontal(classes='full-width'):
-                    yield self.status_song_widget
+        with Middle(classes='bottom bottom-size full-width'), Vertical(classes='bottom full-width panel'):
+            with Horizontal(classes='full-width'):
+                yield self.status_song_widget
 
-                    yield self.goto_position_widget
-                    yield self.filter_widget
-                    yield self.search_widget
-                    yield self.directory_widget
-                    yield self.playlist_name_widget
-                    yield self.add_songs_widget
-                    yield self.synchronize_widget
+                yield self.goto_position_widget
+                yield self.filter_widget
+                yield self.search_widget
+                yield self.directory_widget
+                yield self.playlist_name_widget
+                yield self.add_songs_widget
+                yield self.synchronize_widget
 
-                yield self.notification_widget
+            yield self.notification_widget
 
     def on_mount(self) -> None:
         """Handles events on the mounting of the home page."""
@@ -575,13 +589,13 @@ class HomePage(PageBase):  # pylint: disable=too-many-public-methods, too-many-i
             self.selected_playlist = PlayList(Path(CONFIG.data.general.playlist.selected))
             self.load_playlist()
         else:
-            path = Path('.')
+            path = Path()
             self._load_directory(path)
             self.change_title(f'{CONFIG.data.appearance.style.icons.directory} {path.absolute()}')
 
         mixer.music.set_volume(self._volume)
 
-    def focus(self, scroll_visible: bool = True) -> Self:
+    def focus(self, scroll_visible: bool = True) -> Self:  # noqa: FBT002
         """Sets the focus on the home page.
 
         :param scroll_visible: Whether to show the scroll.

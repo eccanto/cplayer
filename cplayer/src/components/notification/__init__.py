@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import Optional
 
 from textual.app import ComposeResult
+from textual.widget import Widget
 from textual.widgets import Label
 
 from cplayer.src.components.hidden_widget import HiddenWidget
@@ -12,14 +12,23 @@ class NotificationWidget(HiddenWidget):
 
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
-    def __init__(self, label: str, *args, **kwargs) -> None:
+    def __init__(  # noqa: PLR0913
+        self,
+        label: str,
+        *children: Widget,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+        start_hidden: bool = True,
+    ) -> None:
         """Initializes the Widget object.
 
         :param label: The label text to display in the notification.
         :param *args: Variable length argument list.
         :param **kwargs: Arbitrary keyword arguments.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*children, name=name, id=id, classes=classes, disabled=disabled, start_hidden=start_hidden)
 
         self.label = label
 
@@ -38,7 +47,7 @@ class NotificationWidget(HiddenWidget):
         label = self.query_one(Label)
         label.update(message)
 
-    def show(self, focus: bool = True, message: Optional[str] = None) -> None:
+    def show(self, focus: bool = True, message: str | None = None) -> None:  # noqa: FBT002
         """Shows the notification.
 
         :param message: Optional message to update the content of the notification before showing it.
