@@ -285,32 +285,33 @@ poetry run tox -e check_code
 
 * 1.0.0 - Initial version.
 * 1.0.1:
-    * `refactor`: Update documentation.
+    * `refactor`: Updates documentation.
     * `fix`: Default playlist loading.
-    * `feat`: Add `--version` command line argument.
+    * `feat`: Adds `--version` command line argument.
 * 1.0.2:
     * `feat`: Download song from a YouTube URL (`--url`).
 * 1.1.0:
-    * `fix`: Update the application when a song is broken.
-    * `feat`: Add log details when downloading a song.
+    * `fix`: Updates the application when a song is broken.
+    * `feat`: Adds log details when downloading a song.
 * 1.1.1:
-    * `fix`: Store absolute paths of the songs in the playlist file.
-    * `refactor`: Change keyboard shortcuts (`vim` style).
+    * `fix`: Stores absolute paths of the songs in the playlist file.
+    * `refactor`: Changes keyboard shortcuts (`vim` style).
 * 1.1.2:
     * `fix`: Handle error when song files are not found.
-    * `documentation`: Add development documentation.
-    * `refactor`: Enable log file.
+    * `documentation`: Adds development documentation.
+    * `refactor`: Enables log file.
 * 1.1.3:
-    * `refactor`: Update requirements compatibility.
+    * `refactor`: Updates requirements compatibility.
 * 1.1.4:
-    * `refactor`: Update application compatibility.
+    * `refactor`: Updates application compatibility.
 * 1.1.5:
     * `fix`: Apply background and primary color from local configuration file.
 * 1.2.0:
-    * `feat`: Add displacement to the last position with `:$`.
-    * `feat`: Add synchronization feature to take a directory path and synchronize its files with the current playlist,
+    * `feat`: Adds displacement to the last position with `:$`.
+    * `feat`: Adds synchronization feature to take a directory path and synchronize its files with the current playlist,
       if the directory contains previously deleted songs they are not re-added.
 * 1.2.1:
-    * `fix`: Fix an error in the size of the layouts.
-    * `refactor`: Add poetry as a dependency and packaging manager.
+    * `feat`: Adds compatibility to python 3.10 and 3.12.
+    * `fix`: Fixes an error in the size of the layouts.
+    * `refactor`: Adds poetry as a dependency and packaging manager.
     * `refactor`: General refactoring on static code analysis tools.
