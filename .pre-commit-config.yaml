@@ -3,14 +3,20 @@ repos:
     rev: v1.10.3
     hooks:
       - id: prospector
-        language: system
+        additional_dependencies:
+          - ".[with_mypy,with_pyroma]"
+        args:
+          - "--with-tool=mypy"
+          - "--with-tool=pyroma"
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.3
     hooks:
       - id: ruff
       - id: ruff-format
-        args: ["--check", "--diff"]
+        args:
+          - "--check"
+          - "--diff"
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0
