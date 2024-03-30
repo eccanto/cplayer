@@ -123,7 +123,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
             on_quit=self.on_quit,
         )
         self.add_songs_widget = InputLabelWidget(
-            f'{CONFIG.data.appearance.style.icons.add_songs} add songs (mp3/directory)',
+            f'{CONFIG.data.appearance.style.icons.add_songs} add songs (directory)',
             on_enter=self.add_songs,
             on_quit=self.on_quit,
         )
@@ -331,7 +331,9 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
         if path.exists():
             self.directory_widget.hide()
 
-            self.tracklist_widget.set_songs(list(path.glob('*.mp3')), sort=True)
+            self.tracklist_widget.set_songs(
+                list(song for song in path.iterdir() if song.suffix in ('.mp3', '.wav')), sort=True
+            )
 
             self.tracklist_widget.display = True
             self.tracklist_widget.focus()
@@ -367,8 +369,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
             current_songs.extend(
                 [
                     path
-                    for path in directory_path.glob('*.mp3')
-                    if (path not in deleted_songs) and (path not in current_songs)
+                    for path in directory_path.iterdir()
+                    if (path not in deleted_songs) and (path not in current_songs) and path.suffix in ('.mp3', '.wav')
                 ],
             )
             self.tracklist_widget.set_songs(current_songs, sort=True)
@@ -531,7 +533,9 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
 
         path = Path(self.add_songs_widget.value)
         if path.exists():
-            songs = [path] if path.is_file() else list(path.glob('*.mp3'))
+            songs = [path] if path.is_file() else list(
+                song for song in path.iterdir() if song.suffix in ('.mp3', '.wav')
+            )
             if songs:
                 if self.selected_playlist:
                     self.selected_playlist.deleted_songs = [

@@ -83,7 +83,7 @@ cplayer
 ```
 
 By default the application will load the last playlist if it exists, otherwise the application will use the current
-path to load the `.mp3` files from the directory (not recursively).
+path to load the `.mp3` and `.wav` files from the directory (not recursively).
 
 ### Options
 

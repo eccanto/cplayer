@@ -67,7 +67,13 @@ class Song:
         :returns: The duration of the audio in seconds.
         """
         if self._seconds is None:
-            self._audio = AudioSegment.from_mp3(self.path)
+            if self.path.suffix == '.mp3':
+                self._audio = AudioSegment.from_mp3(self.path)
+            elif self.path.suffix == '.wav':
+                self._audio = AudioSegment.from_wav(self.path)
+            else:
+                raise NotImplementedError
+
             if self._audio:
                 self._seconds = len(self._audio) / 1000.0
                 self.frame_rate = self._audio.frame_rate

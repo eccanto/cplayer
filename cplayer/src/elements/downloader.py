@@ -27,18 +27,18 @@ class YoutubeDownloader:  # pylint: disable=too-few-public-methods
         """Starts the download process.
 
         This method initiates the download of the audio from the provided YouTube video URL. It saves the downloaded
-        audio file as an MP3 with a title-based filename in the current directory.
+        audio file as an wav with a title-based filename in the current directory.
         """
         with TemporaryDirectory() as temporary_directory:
             output_directory = Path(temporary_directory)
             options = {
                 'format': 'bestaudio/best',
-                'outtmpl': str(output_directory.joinpath('%(title)s.mp3')),
+                'outtmpl': str(output_directory.joinpath('%(title)s')),
                 'quiet': False,
                 'postprocessors': [
                     {
                         'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
+                        'preferredcodec': 'wav',
                         'preferredquality': '192',
                     },
                 ],
@@ -50,9 +50,9 @@ class YoutubeDownloader:  # pylint: disable=too-few-public-methods
 
                     name = Prompt.ask('song Name', default=information['fulltitle'])
                     path = Prompt.ask('destination Path', default=str(Path().absolute()))
-                    destination = Path(path).joinpath(f'{name}.mp3')
+                    destination = Path(path).joinpath(f'{name}.wav')
 
-                    downloaded_file = next(output_directory.glob('*.mp3'))
+                    downloaded_file = next(output_directory.glob('*.wav'))
                     shutil.copy(downloaded_file, destination)
 
                     console = Console()
