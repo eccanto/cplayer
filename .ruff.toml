@@ -22,7 +22,7 @@ select = [
     "ALL"
 ]
 ignore = [
-    "ANN101",  # mypy infer the type of self automatically.
+    "ANN101",  # NOTE: mypy infer the type of self automatically.
     "D",       # TODO: Remove this line.
     "FBT001",  # NOTE: Ignored to overwrite third party package methods.
     "CPY001",  # NOTE: Ignore copyright notice.
