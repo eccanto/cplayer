@@ -156,7 +156,7 @@ After cloning the repository run the following command in the repository root, t
 before each commit into the repository to maintain the quality of the project:
 
 ```bash
-pre-commit install
+poetry run pre-commit install
 ```
 
 #### Basic configuration
