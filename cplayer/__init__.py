@@ -1,3 +1,3 @@
 """Copyright (c) 2024 Erik Ccanto <ccanto.erik@gmail.com>."""
 
-__version__ = '1.3.0'
+__version__ = '1.2.1'
