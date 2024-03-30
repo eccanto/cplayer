@@ -28,7 +28,8 @@ Only tested in Linux.
 * [Known issues](#known-issues)
 * [Reports and Debugging](#reports-and-debugging)
 * [Developers](#developers)
-  * [Set up the Git hooks custom directory](#set-up-the-git-hooks-custom-directory)
+  * [Dependencies](#dependencies)
+  * [Set up pre-commit](#set-up-pre-commit)
   * [Basic configuration](#basic-configuration)
   * [Testing](#testing)
   * [Advanced configuration](#advanced-configuration)
@@ -149,6 +150,14 @@ The log file can be used to report and debug errors.
 ### Developers
 
 This project use [tox](https://tox.wiki/en/latest/) and [pytest](https://docs.pytest.org/) to run the library tests.
+
+#### Dependencies
+
+To use development tools you must install the poetry packages:
+
+```bash
+poetry install
+```
 
 #### Set up pre-commit
 
