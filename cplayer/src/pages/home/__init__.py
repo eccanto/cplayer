@@ -332,7 +332,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
             self.directory_widget.hide()
 
             self.tracklist_widget.set_songs(
-                list(song for song in path.iterdir() if song.suffix in ('.mp3', '.wav')), sort=True
+                [song for song in path.iterdir() if song.suffix in ('.mp3', '.wav')], sort=True
             )
 
             self.tracklist_widget.display = True
@@ -533,9 +533,7 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
 
         path = Path(self.add_songs_widget.value)
         if path.exists():
-            songs = [path] if path.is_file() else list(
-                song for song in path.iterdir() if song.suffix in ('.mp3', '.wav')
-            )
+            songs = [path] if path.is_file() else [song for song in path.iterdir() if song.suffix in ('.mp3', '.wav')]
             if songs:
                 if self.selected_playlist:
                     self.selected_playlist.deleted_songs = [

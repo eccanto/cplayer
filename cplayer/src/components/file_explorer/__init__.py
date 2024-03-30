@@ -59,7 +59,8 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
         :returns: An iterable of filtered paths.
         """
         return [
-            path for path in paths
+            path
+            for path in paths
             if (not path.name.startswith('.')) and (path.is_dir() or path.suffix in ('.mp3', '.wav'))
         ]
 

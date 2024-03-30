@@ -150,13 +150,13 @@ The log file can be used to report and debug errors.
 
 This project use [tox](https://tox.wiki/en/latest/) and [pytest](https://docs.pytest.org/) to run the library tests.
 
-#### Set up the Git hooks custom directory
+#### Set up pre-commit
 
 After cloning the repository run the following command in the repository root, this ensures that library tests are run
-before each push into the repository to maintain the quality of the project:
+before each commit into the repository to maintain the quality of the project:
 
 ```bash
-git config core.hooksPath .githooks
+pre-commit install
 ```
 
 #### Basic configuration
@@ -164,7 +164,7 @@ git config core.hooksPath .githooks
 Install development python requirements
 
 ```bash
-pip install -r requirements_dev.txt
+poetry install
 ```
 
 #### Testing
@@ -172,26 +172,26 @@ pip install -r requirements_dev.txt
 Simply run "`tox`" to execute all the library tests.
 
 ```bash
-tox
+poetry run tox
 ```
 
 to run the tests for a particular Python version, you can do:
 
 
 ```bash
-tox -e py38
+poetry run tox -e py38
 ```
 
 to clean the test environment:
 
 ```bash
-tox -e clean
+poetry run tox -e clean
 ```
 
 to publish the pypi package:
 
 ```bash
-tox -e publish
+poetry run tox -e publish
 ```
 
 #### Advanced configuration
@@ -204,30 +204,13 @@ versions, the following steps must be followed:
 2. Install python versions:
 
     ```bash
-    for python_version in "3.7" "3.8" "3.9" "3.10" "3.11" ; do pyenv install ${python_version}; done
+    for python_version in "3.10" "3.11" "3.12"; do pyenv install ${python_version}; done
     ```
 
 3. Enable python versions:
 
     ```bash
-    pyenv local "3.7" "3.8" "3.9" "3.10" "3.11"
-    ```
-
-4. Reinstall virtualenv (`if necessary`)
-
-    ```bash
-    # uninstall virtualenv
-    pip uninstall virtualenv
-    sudo apt purge python3-virtualenv
-
-    # install virtualenv
-    pip install virtualenv
-    ```
-
-5. Install development python requirements (`if necessary`)
-
-    ```bash
-    pip install -r requirements_dev.txt
+    pyenv local "3.10" "3.11" "3.12"
     ```
 
 #### Static code analysis tools
@@ -315,3 +298,6 @@ poetry run tox -e check_code
     * `fix`: Fixes an error in the size of the layouts.
     * `refactor`: Adds poetry as a dependency and packaging manager.
     * `refactor`: General refactoring on static code analysis tools.
+* 1.3.0:
+    * `feat`: Adds support for wav song files.
+    * `documentation`: Refactor developers documentation.
