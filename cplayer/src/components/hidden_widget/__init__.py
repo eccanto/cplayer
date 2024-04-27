@@ -1,3 +1,5 @@
+"""Module that contains the implementation of a hidden widget."""
+
 from textual.widget import Widget
 
 

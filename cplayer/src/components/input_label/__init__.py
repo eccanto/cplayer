@@ -1,3 +1,5 @@
+"""Module that contains the implementation of an input label widget."""
+
 from collections.abc import Callable, Coroutine
 from pathlib import Path
 from typing import ClassVar

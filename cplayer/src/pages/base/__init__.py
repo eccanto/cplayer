@@ -1,3 +1,5 @@
+"""Module that contains the implementation of a base class for all pages in the application."""
+
 from collections.abc import Callable
 from pathlib import Path
 

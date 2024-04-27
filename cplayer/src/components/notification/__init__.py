@@ -1,3 +1,5 @@
+"""Module that contains the implementation of a notification widget."""
+
 from pathlib import Path
 
 from textual.app import ComposeResult

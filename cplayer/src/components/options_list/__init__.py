@@ -1,3 +1,5 @@
+"""Module that contains the implementation of an options list widget."""
+
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, ClassVar

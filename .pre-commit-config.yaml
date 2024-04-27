@@ -5,8 +5,6 @@ repos:
         name: prospector
         language: system
         entry: prospector
-        additional_dependencies:
-          - ".[with_mypy,with_pyroma]"
         args:
           - "--with-tool=mypy"
           - "--with-tool=pyroma"
@@ -17,6 +15,7 @@ repos:
         name: ruff
         language: system
         entry: ruff check
+        files: \.py$
       - id: ruff-format
         name: ruff-format
         language: system
@@ -24,6 +23,7 @@ repos:
         args:
           - "--check"
           - "--diff"
+        files: \.py$
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0

@@ -1,3 +1,5 @@
+"""Module that contains the implementation of a volume bar widget."""
+
 from pathlib import Path
 
 from textual._types import UnusedParameter

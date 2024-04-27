@@ -156,7 +156,7 @@ This project use [tox](https://tox.wiki/en/latest/) and [pytest](https://docs.py
 To use development tools you must install the poetry packages:
 
 ```bash
-poetry install
+poetry install --with dev
 ```
 
 #### Set up pre-commit
@@ -165,7 +165,7 @@ After cloning the repository run the following command in the repository root, t
 before each commit into the repository to maintain the quality of the project:
 
 ```bash
-poetry run pre-commit install
+git config core.hooksPath .githooks
 ```
 
 #### Basic configuration

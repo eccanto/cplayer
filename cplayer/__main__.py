@@ -126,7 +126,6 @@ def main(path: Path | None, url: str | None) -> None:
     This command line tool plays music files from a specified directory or last used playlist.
 
     Examples:
-
         - Play music from the current directory or the last used playlist if it exists:
 
           $ cplayer

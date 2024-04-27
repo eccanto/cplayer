@@ -1,3 +1,5 @@
+"""Elements package."""
+
 from pathlib import Path
 
 from cplayer.src.elements.config import Config

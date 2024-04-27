@@ -1,3 +1,5 @@
+"""Module that contains the implementation of a status song widget."""
+
 from pathlib import Path
 
 from textual.app import ComposeResult

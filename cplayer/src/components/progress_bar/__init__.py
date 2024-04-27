@@ -1,3 +1,5 @@
+"""Module that contains the implementation of a progress bar widget."""
+
 from enum import Enum
 from pathlib import Path
 from typing import cast
