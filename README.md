@@ -313,5 +313,5 @@ poetry run tox -e check_code
     * `feat`: Adds support for wav song files.
     * `documentation`: Refactor developers documentation.
 * 1.3.1:
-    * `fix`: FileExplorer quit action
+    * `fix`: Adds file explorer quit action.
     * `refactor`: Update textual package.
