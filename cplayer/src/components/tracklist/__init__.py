@@ -1,3 +1,5 @@
+"""Package representing a playlist widget."""
+
 import random
 from collections.abc import Callable
 from difflib import SequenceMatcher
@@ -173,12 +175,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
         """
         yield self.content
 
-    def refresh(
-        self,
-        *regions: Region,
-        repaint: bool = True,
-        layout: bool = False,
-    ) -> Self:
+    def refresh(self, *regions: Region, repaint: bool = True, layout: bool = False, recompose: bool = False) -> Self:
         """Refresh the tracklist widget.
 
         :param *args: Variable length argument list.
@@ -195,7 +192,7 @@ class TracklistWidget(VerticalScroll):  # pylint: disable=too-many-instance-attr
             if self.current_song:
                 self.select(self.current_song.path)
 
-        return super().refresh(*regions, repaint=repaint, layout=layout)
+        return super().refresh(*regions, repaint=repaint, layout=layout, recompose=recompose)
 
     def clean(self) -> None:
         """Cleans seleted song in the tracklist."""

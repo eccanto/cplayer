@@ -90,7 +90,11 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
             ),
             fixed_size=11 if CONFIG.data.appearance.style.footer else 8,
         )
-        self.file_explorer_widget = FileExplorerWidget(path=Path('~').expanduser(), on_select=self.on_select_path)
+        self.file_explorer_widget = FileExplorerWidget(
+            path=Path('~').expanduser(),
+            on_select=self.on_select_path,
+            on_quit=lambda: setattr(self.tracklist_widget, 'display', True),
+        )
 
         self.notification_widget = NotificationWidget('')
 
@@ -308,6 +312,9 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
 
         :param path: The selected file path.
         """
+        if path.is_file():
+            path = path.parent
+
         self._load_directory(path)
 
     def action_load_directory(self) -> None:

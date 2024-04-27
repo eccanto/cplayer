@@ -1,19 +1,26 @@
 repos:
-  - repo: https://github.com/PyCQA/prospector
-    rev: v1.10.3
+  - repo: local
     hooks:
       - id: prospector
+        name: prospector
+        language: system
+        entry: prospector
         additional_dependencies:
           - ".[with_mypy,with_pyroma]"
         args:
           - "--with-tool=mypy"
           - "--with-tool=pyroma"
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.3
+  - repo: local
     hooks:
       - id: ruff
+        name: ruff
+        language: system
+        entry: ruff check
       - id: ruff-format
+        name: ruff-format
+        language: system
+        entry: ruff format
         args:
           - "--check"
           - "--diff"

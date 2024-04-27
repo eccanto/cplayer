@@ -184,20 +184,20 @@ Simply run "`tox`" to execute all the library tests.
 poetry run tox
 ```
 
-to run the tests for a particular Python version, you can do:
+To run the tests for a particular Python version, you can do:
 
 
 ```bash
 poetry run tox -e py38
 ```
 
-to clean the test environment:
+To clean the test environment:
 
 ```bash
 poetry run tox -e clean
 ```
 
-to publish the pypi package:
+To publish the pypi package:
 
 ```bash
 poetry run tox -e publish
@@ -312,3 +312,6 @@ poetry run tox -e check_code
 * 1.3.0:
     * `feat`: Adds support for wav song files.
     * `documentation`: Refactor developers documentation.
+* 1.3.1:
+    * `fix`: FileExplorer quit action
+    * `refactor`: Update textual package.

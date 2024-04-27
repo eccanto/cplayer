@@ -1,10 +1,11 @@
+"""Module that contains the implementation of a file explorer widget."""
+
 import logging
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import ClassVar
 
 from textual.binding import Binding, BindingType
-from textual.widget import Widget
 from textual.widgets import DirectoryTree
 
 from cplayer.src.components.hidden_widget import HiddenWidget
@@ -16,20 +17,20 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
     DEFAULT_CSS = Path(__file__).parent.joinpath('styles.css').read_text(encoding='UTF-8')
 
     BINDINGS: ClassVar[list[BindingType]] = [
+        Binding('escape', 'quit', 'Quit', show=True),
         Binding('enter', 'select', 'Select', show=True),
         Binding('right', 'open', 'Open', show=True),
     ]
 
     def __init__(  # noqa: PLR0913
         self,
-        *children: Widget,
         path: str | Path,
         on_select: Callable[[Path], None],
+        on_quit: Callable[[], None],
         name: str | None = None,
         id: str | None = None,
         classes: str | None = None,
-        disabled: bool = False,
-        start_hidden: bool = True,
+        disabled: bool = False,  # noqa: FBT002
     ) -> None:
         """Initializes the Widget object.
 
@@ -38,12 +39,10 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
         :param **kwargs: Arbitrary keyword arguments.
         """
         DirectoryTree.__init__(self, path=path, name=name, id=id, classes=classes, disabled=disabled)
-        HiddenWidget.__init__(
-            self, *children, name=name, id=id, classes=classes, disabled=disabled, start_hidden=start_hidden
-        )
 
         self.default_path = path
         self.on_select = on_select
+        self.on_quit = on_quit
 
     def on_mount(self) -> None:
         """Handles events on the mounting of the file explorer."""
@@ -67,6 +66,11 @@ class FileExplorerWidget(DirectoryTree, HiddenWidget):  # pylint: disable=too-ma
     def action_open(self) -> None:
         """Selects the selected cursor."""
         super().action_select_cursor()
+
+    def action_quit(self) -> None:
+        """Perform the action associated with quitting the widget."""
+        self.hide()
+        self.on_quit()
 
     def action_select(self) -> None:
         """Runs the `self.on_select` callback with the selected path."""
