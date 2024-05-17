@@ -56,7 +56,6 @@ pip = "^24.0"
 pytest = "^8.1.1"
 twine = "^5.0.0"
 assertpy = "^1.1"
-pre-commit = "^3.6.2"
 prospector = {extras = ["with-mypy", "with-pyroma"], version = "^1.10.3"}
 types-pyyaml = "^6.0.12.20240311"
 ruff = "^0.4.2"

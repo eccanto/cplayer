@@ -263,8 +263,6 @@ The tools used are:
     project complies with the best practices of the Python packaging ecosystem, primarily PyPI, pip, Distribute etc,
     as well as a list of issues that could be improved.
 
-* [detect-secrets](https://github.com/Yelp/detect-secrets): Detect secrets in your code.
-
 ### Run manually
 
 ```bash
