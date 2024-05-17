@@ -266,7 +266,7 @@ The tools used are:
 ### Run manually
 
 ```bash
-poetry run tox -e check_code
+bash .githooks/pre-commit
 ```
 
 ## License

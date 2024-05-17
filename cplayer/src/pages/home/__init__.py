@@ -78,6 +78,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
         self._playing = False
         self._volume = 0.75
 
+        self._song: mixer.Sound | None = None
+
         self.status_song_widget = StatusSong(self._volume, start_hidden=False)
         self.tracklist_widget = TracklistWidget(
             self.play_song,
@@ -181,8 +183,10 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
 
     def action_cursor_right(self, seconds: int = 5) -> None:
         """Move the playback position `seconds` forward."""
-        if mixer.music.get_busy():
-            self._start_position += int(mixer.music.get_pos() / 1000.0) + seconds
+        if mixer.music.get_busy() and self._song:
+            self._start_position = min(
+                int(self._start_position + mixer.music.get_pos() / 1000.0 + seconds), int(self._song.get_length())
+            )
             mixer.music.play(0, self._start_position)
 
     def action_filter(self) -> None:
@@ -227,6 +231,8 @@ class HomePage(PageBase):  # pylint: disable=too-many-instance-attributes,too-ma
         if song.seconds:
             try:
                 self._start_position = 0
+                self._song = mixer.Sound(song.path)
+
                 mixer.music.load(song.path)
                 mixer.music.play()
 
